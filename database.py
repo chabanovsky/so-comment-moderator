@@ -1,5 +1,5 @@
 from meta import db, db_session, engine
-#from db_models import Reviewer, Flagger, SuggestionEditor, ActiveUser, Answer, Question, Visitor, Voter
+from db_models import SiteComment
 
 def init_db():
     # import all modules here that might define models so that

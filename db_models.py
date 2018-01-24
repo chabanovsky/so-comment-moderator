@@ -29,3 +29,42 @@ class DBModelAdder:
 
     def add(self, inst):
         self.session.add(inst)  
+
+
+class SiteComment(db.Model):
+    __tablename__ = 'site_comment'
+
+    id          = Column(Integer, primary_key=True)
+    comment_id  = Column(BigInteger)
+    post_id     = Column(BigInteger)
+    body        = Column(String)
+    processed_body  = Column(String)
+    creation_date   = Column(DateTime, default=datetime.datetime.now)
+    is_verified = Column(Boolean, default=False)
+    is_rude     = Column(Boolean, default=False)
+    author_id   = Column(BigInteger)
+    verified_user   = Column(BigInteger)
+
+    def __init__(self, comment_id, 
+                post_id,
+                body, 
+                processed_body, 
+                creation_date, 
+                is_verified, 
+                is_rude, 
+                author_id,
+                verified_user):
+        self.comment_id = comment_id
+        self.post_id = post_id
+        self.body   = body
+        self.processed_body = processed_body
+        self.creation_date = creation_date
+        self.is_verified = is_verified
+        self.is_rude = is_rude
+        self.author_id = author_id
+        self.verified_user = verified_user
+
+
+    def __repr__(self):
+        return '<%s %r>' % (SiteComment.__tablename__, str(self.id))
+
