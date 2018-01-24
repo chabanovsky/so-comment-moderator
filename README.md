@@ -1,4 +1,4 @@
-# Stack Overflow in Russian Comment moderator
+# Stack Overflow in Russian Comment Moderator
 
 This is a auto moderator that helps me to track rude comments on Stack Overflow in Russian
 
