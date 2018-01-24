@@ -1,0 +1,26 @@
+import sys
+import os
+
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib'))
+sys.path.append(os.path.abspath(os.getcwd()))    
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
+
+from csv_data_uploader import CSVDataUploader
+from database import init_db
+
+from meta import *
+from views import *
+from filters import *
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        if str(sys.argv[1]) == "--upload-data":
+            uploader = CSVDataUploader()
+            uploader.cvs_to_db()
+            sys.exit()
+        if str(sys.argv[1]) == "--init-db":
+            init_db() 
+            sys.exit()   
+
+    app.run()
