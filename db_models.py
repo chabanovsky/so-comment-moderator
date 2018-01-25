@@ -30,7 +30,6 @@ class DBModelAdder:
     def add(self, inst):
         self.session.add(inst)  
 
-
 class SiteComment(db.Model):
     __tablename__ = 'site_comment'
 
@@ -53,7 +52,7 @@ class SiteComment(db.Model):
                 is_verified, 
                 is_rude, 
                 author_id,
-                verified_user):
+                verified_user=-1):
         self.comment_id = comment_id
         self.post_id = post_id
         self.body   = body
@@ -68,3 +67,14 @@ class SiteComment(db.Model):
     def __repr__(self):
         return '<%s %r>' % (SiteComment.__tablename__, str(self.id))
 
+    @staticmethod
+    def last_comment():
+        session = db_session()
+        query = session.query(SiteComment).order_by(desc(SiteComment.creation_date))
+        result = query.first()
+        session.close()
+        return result
+
+    @staticmethod
+    def is_exist(adder, comment_id):
+        return True if adder.session.query(func.count(SiteComment.id)).filter_by(comment_id=comment_id).scalar() > 0 else False

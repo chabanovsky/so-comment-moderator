@@ -31,3 +31,7 @@ engine = make_db_engine()
 db_session = make_db_session(engine)
 
 db = SQLAlchemy(app)           
+
+STACKEXCHANGE_CLIENT_SECRET = os.environ.get("STACKEXCHANGE_CLIENT_SECRET", "")
+STACKEXCHANGE_CLIENT_KEY = os.environ.get("STACKEXCHANGE_CLIENT_KEY", "")
+STACKEXCHANGE_CLIENT_ID = int(os.environ.get("STACKEXCHANGE_CLIENT_ID", 0)) 
