@@ -24,5 +24,5 @@ Over that time I found that it's really hard for some people to keep calm when t
 
 ## The Model
 
-1. My first model uses cosine similarities as a main argument on judgment of a comment.
+1. My first model uses cosine similarities as a main argument on judgment of a comment. (Which does not work actually!)
 2. The only thing we need is to update the database of rude comments (wich should be uploaded before the initial start).

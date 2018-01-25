@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
 
 from csv_data_uploader import CSVDataUploader
 from database import init_db
-from tasks import load_comments_from_se_to_db
+from tasks import load_comments_from_se_to_db, analyse_comments
 
 from meta import *
 from views import *
@@ -26,6 +26,10 @@ if __name__ == "__main__":
         
         if str(sys.argv[1]) == "--comments-from-se-to-db":
             load_comments_from_se_to_db() 
+            sys.exit()   
+
+        if str(sys.argv[1]) == "--analyse":
+            analyse_comments() 
             sys.exit()   
 
     app.run()

@@ -78,3 +78,19 @@ class SiteComment(db.Model):
     @staticmethod
     def is_exist(adder, comment_id):
         return True if adder.session.query(func.count(SiteComment.id)).filter_by(comment_id=comment_id).scalar() > 0 else False
+
+    @staticmethod
+    def rude_comments():
+        session = db_session()
+        query = session.query(SiteComment).order_by(desc(SiteComment.creation_date)).filter_by(is_rude=True).filter_by(is_verified=True)
+        result = query.all()
+        session.close()
+        return result    
+
+    @staticmethod
+    def unverified_comments():
+        session = db_session()
+        query = session.query(SiteComment).order_by(desc(SiteComment.creation_date)).filter_by(is_verified=False)
+        result = query.all()
+        session.close()
+        return result    
