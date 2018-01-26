@@ -2,9 +2,9 @@
 
 This is a auto moderator that helps me to track rude comments on Stack Overflow in Russian
 
-Basically for a long time I had been reviewing most of the posts on Stack Overflow in Russian until we had something like 100 questions a day. Then I started reviewing only questions from new users wich I have not done do any more for a year almost. 
+Basically for a long time I had been reviewing most of the posts on Stack Overflow in Russian until we had something like 100 questions per day. Then I started reviewing only questions from new users wich I have not done anymore for a year almost. 
 
-Over that time I found that it's really hard for some people to keep calm when they see something, let say, not 100% suitable for our site. I mean, badly written questions. The people may sometimes forget that if one writes poor questions that means one and only one thing — this person writes poor questions. It does not mean that the perosn is a "bad" one. So, most of the time I moderated comments on posts but not the posts. I tracked comments and rudness. Currently I cannot do so any more becase of the number of comments and a have planty of stuff to do. On the other hand with more and more new users that visit the site very day the need for moderation increases. I hope this robo–moderator will help us keep kindness atmosphere in the community regardless any obstacles in our way!
+Over that time I found that it's really hard for some people to keep calm when they see something, let's say, not 100% suitable for our site. I mean, badly written questions. The people may sometimes forget that if one writes poor questions that means one and only one thing — this person writes poor questions. It does not mean that the person is a "bad" one. Currently I cannot do so anymore because of the number of comments. On the other hand with more and more new users that visit the site very day the need for moderation increases. I hope this robo–moderator will help us keep kindness atmosphere in the community regardless any obstacles in our way!
 
 
 # Specification
