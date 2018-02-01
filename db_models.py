@@ -32,6 +32,7 @@ class DBModelAdder:
 
 class SiteComment(db.Model):
     __tablename__ = 'site_comment'
+    TotalNumberOfComments = 1025111
 
     id          = Column(Integer, primary_key=True)
     comment_id  = Column(BigInteger)
@@ -83,6 +84,14 @@ class SiteComment(db.Model):
     def rude_comments():
         session = db_session()
         query = session.query(SiteComment).order_by(desc(SiteComment.creation_date)).filter_by(is_rude=True).filter_by(is_verified=True)
+        result = query.all()
+        session.close()
+        return result    
+
+    @staticmethod
+    def normal_comments():  
+        session = db_session()
+        query = session.query(SiteComment).order_by(desc(SiteComment.creation_date)).filter_by(is_rude=False).filter_by(is_verified=True)
         result = query.all()
         session.close()
         return result    

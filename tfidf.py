@@ -25,7 +25,7 @@ class DocsStats:
         doc_number = len(documents)
 
         full_text = " ".join([doc.filtered_text for doc in documents])
-        self.indexes, self.dataset, self.word_to_index, self.index_to_word = build_dataset(full_text)
+        self.indexes, self.dataset, self.word_to_index, self.index_to_word = build_dataset(full_text.split(" "))
 
         result = dict()
         for word, count in self.dataset:
@@ -52,7 +52,7 @@ class DocsStats:
         proto = self.vector_proto()
         for document in self.documents:
             document.vectorise(proto)
-    
+
 
 class Document:
     def __init__(self, stats, id, body, filtered_text):
@@ -65,7 +65,7 @@ class Document:
 
     def process_tf(self):
         text = self.filtered_text
-        words = collections.Counter(text).most_common()
+        words = collections.Counter(text.split(" ")).most_common()
         total_count = sum([count for word, count in words])
         return {word: float(count)/float(total_count) for word, count in words}        
 

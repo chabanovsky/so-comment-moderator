@@ -3,13 +3,13 @@ import numpy as np
 from operator import itemgetter
 
 class CosineSimilarity:
-    def __init__(self, documents, threshold=0.91):
+    def __init__(self, documents, threshold=0.90):
         self.documents = documents
         self.threshold = threshold
         self.similar = self.similar_documents()
 
     def biggest_cluster(self):
-        similar = [item for item in self.similar if len(item) > 1]
+        similar = self.similar
 
         lengths = {index: len(value) for index, value in enumerate(similar)}
         final_classes = [key for key, _ in sorted(lengths.items(), key=itemgetter(1), reverse=True)]
@@ -22,7 +22,7 @@ class CosineSimilarity:
             val = first.vector.dot(second.vector.transpose()) / norms
             return float(val[0][0])
         else:
-            return 0
+            return 0.
     
 
     def similar_documents(self):

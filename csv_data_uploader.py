@@ -18,8 +18,11 @@ class CSVDataUploader:
         adder = DBModelAdder()
         adder.start()
 
-        rude_cmnts = self.rude_comments()
+        rude_cmnts = self.read_comments('rude_comments.csv')
         for comment_id, body, post_id, creation_date, author_id in rude_cmnts:
+            if SiteComment.is_exist(adder, comment_id):
+                continue
+
             adder.add(
                 SiteComment(comment_id, 
                             post_id, 
@@ -31,9 +34,26 @@ class CSVDataUploader:
                             VERIFIED_USER_ID_BY_DEFAULT)
                 )
 
+        normal_cmnts = self.read_comments('normal_comments.csv')
+        for comment_id, body, post_id, creation_date, author_id in normal_cmnts:
+            if SiteComment.is_exist(adder, comment_id):
+                continue
+
+            adder.add(
+                SiteComment(comment_id, 
+                            post_id, 
+                            body, 
+                            process_text(body), 
+                            creation_date, 
+                            True, False, 
+                            author_id, 
+                            VERIFIED_USER_ID_BY_DEFAULT)
+                )
+
+
         adder.done()
 
-    def rude_comments(self, filename='rude_comments.csv'):
+    def read_comments(self, filename='comments.csv'):
         pure_data = list()
         with open(self.prefix + filename, 'rt', encoding="utf8") as csvfile:
             csv_reader = csv.reader(csvfile, delimiter=',')
