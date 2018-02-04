@@ -50,7 +50,7 @@ def analyse_with_bayes_classifier():
     test_normal_comments = normal_comments[train_normal_len:]
 
     classifier = BinaryNaiveBayesClassifier()
-    classifier.train(train_rude_comments, train_normal_comments, rude_comments_len, SiteComment.TotalNumberOfComments-rude_comments_len)
+    classifier.train(train_rude_comments, train_normal_comments)
 
     print ("\r\nRude comments to test: %s" % (str(len(test_rude_comments))))
     print ("Testing...")
