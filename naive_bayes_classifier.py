@@ -4,8 +4,8 @@ import collections
 import copy
 
 class BinaryNaiveBayesClassifier:
-    def __init__(self):
-        pass
+    def __init__(self, verbose=False):
+        self.verbose = verbose
 
     def train(self, rude_comments, normal_comments, k=0.8):
         def stat_in_comments(word, comments):
@@ -31,6 +31,21 @@ class BinaryNaiveBayesClassifier:
 
         self.rude_word_dict = { key: (stat_in_comments(key, rude_comments) + 1) / rude_len for key, _ in self.common }
         self.normal_word_dict = { key: (stat_in_comments(key, normal_comments) + 1) / normal_len for key, _ in self.common }
+        self.pos_weight = 61.4
+        self.neg_weight = 1.0
+
+    def adjust_weights(self):
+        acc, tpr, tnr = self.current_accuracy()
+        step = 0.1
+        prev_tpr = tpr - 0.001
+
+        while tpr < 0.8:
+            self.pos_weight += step
+            prev_tpr = tpr
+            acc, tpr, tnr = self.current_accuracy()
+            if self.verbose:
+                print("Accuracy: %s, tpr: %s, tnr: %s" % (str(acc), str(tpr), str(tnr)) )
+                self.print_params()
 
     def current_accuracy(self):
         rude_real, normal_real = len(self.rude_test), len(self.normal_test)
@@ -50,6 +65,7 @@ class BinaryNaiveBayesClassifier:
         print("Total pos: %s, neg: %s" % (str(rude_real), str(normal_real)))
         print("TP: %s, FP: %s" % (str(rude_classified), str(rude_real-rude_classified)))
         print("TN: %s, FN: %s" % (str(normal_classified), str(normal_real-normal_classified)))
+        print("PosWeight: %s, NegWaigt: %s" % (str(self.pos_weight), str(self.neg_weight)))
 
 
     def test(self):
@@ -68,4 +84,4 @@ class BinaryNaiveBayesClassifier:
 
         # print ("%s, rude: %s, normal: %s\r\n\r\n" % (" ".join(word_array), str(p_rude), str(p_normal)))
 
-        return math.log(3.0, 10) + p_rude > p_normal
+        return math.log(self.pos_weight, 10) + p_rude > p_normal + math.log(self.neg_weight)
