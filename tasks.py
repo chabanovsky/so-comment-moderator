@@ -6,6 +6,7 @@ from utils import process_text
 from tfidf import DocsStats, Document
 from cosine_similarity import CosineSimilarity
 from naive_bayes_classifier import BinaryNaiveBayesClassifier
+from logistic_regression import LogisticRegaression
 
 
 def load_comments_from_se_to_db():
@@ -38,13 +39,16 @@ def analyse_with_bayes_classifier():
     rude_comments = SiteComment.rude_comments()
     normal_comments = SiteComment.normal_comments()
     
-    classifier = BinaryNaiveBayesClassifier()
+    classifier = LogisticRegaression(True)
     classifier.train(rude_comments, normal_comments)
-    classifier.print_params()
-    return
+    rude_total, rude_right, normal_total, normal_right = classifier.test()
 
-    acc, tpr, tnr = classifier.current_accuracy()
-    print ("Accuracy: %s, tpr: %s, tnr: %s" % (str(acc), str(tpr), str(tnr)))
+    tpr = float(rude_right)/float(rude_total)
+    tnr = float(normal_right)/float(normal_total)
+    total_objects = float(rude_total + normal_total)
+    acc = (rude_right/total_objects) * tpr + (normal_right/total_objects) * tnr
+
+    print("Accuracy: %s, rude: %s (%s), normal: %s (%s) " % (str(acc), str(rude_right), str(rude_total), str(normal_right), str(normal_total)))
 
     print("Analyse real comments:")    
     unverified_comments = SiteComment.unverified_comments()
