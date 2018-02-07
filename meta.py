@@ -16,8 +16,10 @@ def make_db_engine():
     return create_engine(app.config['SQLALCHEMY_DATABASE_URI'], convert_unicode=True)
 
 LANGUAGE = "ru"
-APP_URL = "http://rudevs.ru"
+APP_URL = "http://benice.rudevs.ru"
 DB_NAME = "comment_moderator"
+FEED_APP_TITLE = ""
+SO_URL = "https://%stackoverflow.com" % (str(LANGUAGE + ".") if LANGUAGE != "en" else "")
 
 app = Flask(__name__)
 

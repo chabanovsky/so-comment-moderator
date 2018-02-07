@@ -1,5 +1,5 @@
 # encoding:utf-8
-from se_api import get_recent_comments
+from se_api import get_recent_comments, get_post_infos
 from db_models import SiteComment, DBModelAdder
 from utils import process_text
 
@@ -9,33 +9,64 @@ from naive_bayes_classifier import BinaryNaiveBayesClassifier
 from logistic_regression import LogisticRegaression
 
 
+
 def load_comments_from_se_to_db():
+    def make_site_comment_params(comment, info):
+        comment_id, post_id, body, creation_date, author_id, author_name = comment
+        question_id, answer_id, post_author_id, post_author_name, score, title = info
+        return {
+            "comment_id": comment_id,
+            "question_id": question_id,
+            "answer_id": answer_id,
+            "post_author_id": post_author_id,
+            "post_score": score,
+            "title": title,
+            "body": body,
+            "processed_body": process_text(body),
+            "creation_date": creation_date,
+            "author_id": author_id,
+            "author_name": author_name,
+            "is_verified": False,
+            "is_rude": False
+        }
+
     last_one = SiteComment.last_comment()
     comments = get_recent_comments(last_one.creation_date)
+    infos = dict()
+    ids = [comment[1] for comment in comments]
+    page_size = 20
+    counter = 0
+
+    while counter < len(ids):
+        req_ids = ids[counter:counter+page_size]
+        info = get_post_infos(req_ids)
+        infos.update(info)
+        counter += page_size
 
     adder = DBModelAdder()
     adder.start()
-    for comment_id, post_id, body, creation_date, author_id in comments:
-        if SiteComment.is_exist(adder, comment_id):
-            continue
 
-        adder.add(
-            SiteComment(comment_id, 
-                        post_id, 
-                        body, 
-                        process_text(body), 
-                        creation_date, 
-                        False, False, 
-                        author_id)
-        )
+    for comment in comments:
+        if SiteComment.is_exist(adder, comment[0]):
+            continue
+        adder.add(SiteComment(make_site_comment_params(comment, infos.get(comment[1]))))
 
     adder.done()
 
 def analyse_comments():
-    analyse_with_bayes_classifier()
+    #analyse_with_bayes_classifier()
     #analyse_with_cosine()
+    analyse_with_logistic_regretion()
 
 def analyse_with_bayes_classifier():
+    rude_comments = SiteComment.rude_comments()
+    normal_comments = SiteComment.normal_comments()
+    
+    classifier = BinaryNaiveBayesClassifier()
+    classifier.train(rude_comments, normal_comments)
+    classifier.print_params()
+
+def analyse_with_logistic_regretion():
     rude_comments = SiteComment.rude_comments()
     normal_comments = SiteComment.normal_comments()
     

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:creativeCommons="http://backend.userland.com/creativeCommonsRssModule" xmlns:re="http://purl.org/atompub/rank/1.0">
+
+    <title type="text">{{ app_title }}</title>
+    <link rel="self" href="{{ url_for('comment_feed') }}" type="application/atom+xml" />
+    <link rel="alternate" href="{{ url_for('comments') }}" type="text/html" />
+    <subtitle></subtitle>
+    <updated>{{ last_update.strftime('%a, %d %b %y %T') }} UTC</updated>
+    <id>{{ url_for('comment_feed') }}
+    {% for entry in entries %}
+    <entry>
+        <id>{{ so_url }}/q/{{ entry.question_id }}#comment-{{ entry.comment_id }}</id>
+        <title type="text">{{ entry.title }}</title>
+        <author>
+            <name>{{ entry.author_name }}</name>
+            <uri>{{ so_url }}/u/{{ entry.author_id }}</uri>
+        </author>
+        <link rel="alternate" href="{{ entry.link }}" />
+        <published>{{ entry.creation_date }}</published>
+        <updated>{{ entry.analysed }}</updated>
+        <summary type="html">
+            {{ entry.body }}
+        </summary>
+    </entry>
+    {% endfor %}
+</feed>    

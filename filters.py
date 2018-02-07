@@ -4,9 +4,13 @@ from sqlalchemy import and_, desc
 
 from jinja2 import evalcontextfilter, Markup
 
-from meta import app as application, LANGUAGE, db_session
+from meta import app as application, LANGUAGE, db_session, APP_URL
 
 def current_language():
     return LANGUAGE
 
-application.jinja_env.globals.update(current_language=current_language)     
+def app_url():
+    return APP_URL
+
+application.jinja_env.globals.update(current_language=current_language,
+                                    app_url=app_url)     
