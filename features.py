@@ -68,9 +68,9 @@ class SiteCommentFeatures:
         
         negative = float(len([comment for comment in self.rude_comments if comment.post_score <= 0]))
         self.negative_prob = negative/total
-        self.not_negative_prob = (total-negative)/total
+        self.positive_prob = (total-negative)/total
         if self.verbose:
-            print("Probs, neg: %s, not neg: %s" % (str(self.negative_prob), str(self.not_negative_prob)))
+            print("Probs, neg: %s, pos: %s" % (str(self.negative_prob), str(self.positive_prob)))
     
     def setup(self):
         self.setup_textual()
@@ -97,7 +97,7 @@ class SiteCommentFeatures:
             result[shift+SiteCommentFeatures.POST_AUTHOR_ID_FEATURE] = (self.rude_post_authors.get(comment.post_author_id, 0.) + 1.) / (len(self.rude_post_authors) + 2)
             result[shift+SiteCommentFeatures.COMMENT_AUTHOR_ID_FEATURE] = (self.rude_comment_authors.get(comment.author_id, 0.) + 1.) / (len(self.rude_comment_authors) + 2)
             result[shift+SiteCommentFeatures.QA_FEATURE] = self.answer_prob if comment.answer_id > 0 else self.question_prob
-            result[shift+SiteCommentFeatures.POST_SCORE_FEATURE] = comment.post_score # self.negative_prob if comment.post_score <= 0 else self.not_negative_prob
+            result[shift+SiteCommentFeatures.POST_SCORE_FEATURE] = self.negative_prob if comment.post_score <= 0 else self.positive_prob
 
         return result
 
