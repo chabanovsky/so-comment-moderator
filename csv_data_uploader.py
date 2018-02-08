@@ -60,7 +60,8 @@ class CSVDataUploader:
             'author_name': author_username,
             'is_verified': is_verified,
             'verified_user': verified_user,
-            'is_rude': is_rude
+            'is_rude': is_rude,
+            'diff_with_post': diff_with_post
         }
         
 

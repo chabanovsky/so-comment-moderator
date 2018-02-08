@@ -55,7 +55,7 @@ def get_recent_comments(since_date):
             if item.get("creation_date", None) is not None:
                 creation_date = datetime.datetime.utcfromtimestamp(
                     int(item["creation_date"])
-                ).strftime('%Y-%m-%d %H:%M:%S')
+                )
             if item.get("post_id", None) is not None:
                 post_id = int(item["post_id"])
             if item.get("comment_id", None) is not None:
@@ -125,10 +125,14 @@ def get_post_infos(ids):
             else:
                 answer_id = -1
                 question_id = int(item["post_id"])
+            if item.get("creation_date", None) is not None:        
+                creation_date = datetime.datetime.utcfromtimestamp(
+                    int(item["creation_date"])
+                )
 
             post_id = int(item["post_id"])
                 
-            info[post_id] = (question_id, answer_id, author_id, author_name, score, title)
+            info[post_id] = (question_id, answer_id, author_id, author_name, score, title, creation_date)
             
         has_more = bool(data['has_more']) if data.get("has_more", None) is not None else False    
         current_page += 1

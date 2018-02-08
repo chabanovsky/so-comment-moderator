@@ -13,7 +13,8 @@ from logistic_regression import LogisticRegaression
 def load_comments_from_se_to_db():
     def make_site_comment_params(comment, info):
         comment_id, post_id, body, creation_date, author_id, author_name = comment
-        question_id, answer_id, post_author_id, post_author_name, score, title = info
+        question_id, answer_id, post_author_id, post_author_name, score, title, post_creation_date = info
+
         return {
             "comment_id": comment_id,
             "question_id": question_id,
@@ -27,7 +28,8 @@ def load_comments_from_se_to_db():
             "author_id": author_id,
             "author_name": author_name,
             "is_verified": False,
-            "is_rude": False
+            "is_rude": False,
+            "diff_with_post": (creation_date - post_creation_date).total_seconds()
         }
 
     last_one = SiteComment.last_comment()
@@ -61,7 +63,7 @@ def analyse_comments():
 def analyse_with_bayes_classifier():
     rude_comments = SiteComment.rude_comments()
     normal_comments = SiteComment.normal_comments()
-    
+
     classifier = BinaryNaiveBayesClassifier()
     classifier.train(rude_comments, normal_comments)
     classifier.print_params()
@@ -70,8 +72,8 @@ def analyse_with_logistic_regretion():
     rude_comments = SiteComment.rude_comments()
     normal_comments = SiteComment.normal_comments()
     
-    classifier = LogisticRegaression(True)
-    classifier.train(rude_comments, normal_comments)
+    classifier = LogisticRegaression(rude_comments, normal_comments, True)
+    classifier.train()
     rude_total, rude_right, normal_total, normal_right = classifier.test()
 
     tpr = float(rude_right)/float(rude_total)
@@ -81,12 +83,11 @@ def analyse_with_logistic_regretion():
 
     print("Accuracy: %s, rude: %s (%s), normal: %s (%s) " % (str(acc), str(rude_right), str(rude_total), str(normal_right), str(normal_total)))
 
-    print("Analyse real comments:")    
-    unverified_comments = SiteComment.unverified_comments()
-    for comment in unverified_comments:
-        if classifier.classify_rude(comment.processed_body.split(" ")):
-            print(comment.body)
-
+#    print("Analyse real comments:")    
+#    unverified_comments = SiteComment.unverified_comments()
+#    for comment in unverified_comments:
+#        if classifier.classify_rude(comment):
+#            print(comment.body)
 
 def analyse_with_cosine():
     stats = DocsStats()

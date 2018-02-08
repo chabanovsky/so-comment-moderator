@@ -66,6 +66,7 @@ class SiteComment(db.Model):
         self.answer_id  = params.get('answer_id')
         self.post_author_id = params.get('post_author_id')
         self.post_score = params.get('post_score')
+        self.diff_with_post = params.get('diff_with_post', 0)
 
         self.title      = params.get('title', "")
         self.body       = params.get('body')
@@ -77,6 +78,7 @@ class SiteComment(db.Model):
         self.is_verified= params.get('is_verified', False)
         self.is_rude    = params.get('is_rude', False)
         self.verified_user = params.get('verified_user', -1)
+        
 
         self.added      = datetime.datetime.now()
         self.analysed   = None
@@ -122,9 +124,9 @@ class SiteComment(db.Model):
         return result    
 
     @staticmethod
-    def to_verify(start=0, limit=0):
+    def to_verify(start=0, limit=30):
         session = db_session()
-        query = session.query(SiteComment).filter_by(is_verified=False).filter_by(looks_rude=True).order_by(desc(SiteComment.creation_date))
+        query = session.query(SiteComment).filter_by(is_verified=False).filter_by(looks_rude=True).order_by(desc(SiteComment.creation_date)).limit(limit)
         result = query.all()
         session.close()
         return result    

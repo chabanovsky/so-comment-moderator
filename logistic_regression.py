@@ -4,53 +4,40 @@ import collections
 import math
 import numpy as np
 from operator import itemgetter
-
+from scipy import stats
+from features import SiteCommentFeatures
 
 class LogisticRegaression:
-    __RudeClass = 1
-    __NormalClass = 0
-
-    def __init__(self, verbose=False, num_steps=20000, learning_rate=5e-5):
+    def __init__(self, rude_comments, normal_comments, verbose=False, k=0.8, num_steps=10000, learning_rate=5e-5):
         self.verbose = verbose
         self.num_steps = num_steps 
         self.learning_rate = learning_rate
 
-    def train(self, rude_comments, normal_comments, k=0.8):
         rude_border = int(k * len(rude_comments))
         normal_border = int(k * len(normal_comments))
         self.rude_train, self.rude_test = rude_comments[:rude_border], rude_comments[rude_border:]
         self.normal_train, self.normal_test = normal_comments[:normal_border], normal_comments[normal_border:]
-            
-        text = " ".join([comment.processed_body for comment in self.rude_train])
-        text += " ".join([comment.processed_body for comment in self.normal_train])
-        self.common = collections.Counter(text.split(" ")).most_common()
-        self.words = [word for word, _ in sorted(self.common)]
 
+        self.feature_maker = SiteCommentFeatures(self.rude_train, self.normal_train, self.verbose)
+        self.feature_maker.setup()
+        
+    def train(self):
         example_count = len(self.rude_train) + len(self.normal_train)
-        self.features = np.zeros((example_count, len(self.words)))
+        self.features = np.zeros((example_count, self.feature_maker.feature_number()))
         self.labels = np.zeros(example_count)
 
         index = 0
         for comment in self.rude_train:
-            self.features[index] = self.make_feature(comment.processed_body.split(" "))
-            self.labels[index] = LogisticRegaression.__RudeClass
+            self.features[index] = self.feature_maker.feature(comment)
+            self.labels[index] = SiteCommentFeatures.RUDE_CLASS
             index += 1
 
         for comment in self.normal_train:
-            self.features[index] = self.make_feature(comment.processed_body.split(" "))
-            self.labels[index] = LogisticRegaression.__NormalClass
+            self.features[index] = self.feature_maker.feature(comment)
+            self.labels[index] = SiteCommentFeatures.NORMAL_CLASS
             index +=1   
 
         self.trained_weights = self.logistic_regression()
-
-    def make_feature(self, word_array):
-        result = np.zeros(len(self.words))
-        common = {key: value for key, value in collections.Counter(word_array).most_common() }
-
-        for index, word in enumerate(self.words):
-            result[index] = common.get(word, 0.)
-
-        return result
 
     def log_likelihood(self, weights):
         scores = np.dot(self.features, weights)
@@ -75,16 +62,17 @@ class LogisticRegaression:
             
         return weights    
 
-    def classify_rude(self, word_array):
-        test = np.zeros((1, len(self.words)))
-        test[0] = self.make_feature(word_array)
+    def classify_rude(self, comment):
+        test = np.zeros((1, self.feature_maker.feature_number() ))
+        test[0] = self.feature_maker.feature(comment)
+
         scores = np.dot(test, self.trained_weights)
         preds = int(np.round(LogisticRegaression.sigmoid(scores))[0])
-        return preds == LogisticRegaression.__RudeClass
+        return preds == SiteCommentFeatures.RUDE_CLASS
 
     def test(self):
-        rude_right = sum([1 if self.classify_rude(comment.processed_body.split(" ")) else 0 for comment in self.rude_test])
-        normal_right = sum([0 if self.classify_rude(comment.processed_body.split(" ")) else 1 for comment in self.normal_test ])
+        rude_right = sum([1 if self.classify_rude(comment) else 0 for comment in self.rude_test])
+        normal_right = sum([0 if self.classify_rude(comment) else 1 for comment in self.normal_test ])
         return len(self.rude_test), rude_right, len(self.normal_test), normal_right
 
             

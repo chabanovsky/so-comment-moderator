@@ -42,3 +42,8 @@ def comment_feed():
         last_update = comments[0].analysed
     return render_template('feed_proto.xml', app_title=FEED_APP_TITLE, so_url=SO_URL, last_update=last_update, entries=comments)
 
+@application.route("/features", endpoint="features")
+@application.route("/features/", endpoint="features")
+def features():
+    
+    return render_template('features.html')
