@@ -86,7 +86,7 @@ class SiteCommentFeatures:
 
     def feature(self, comment, textual=True, manual=True):
         shift = 0
-        result = np.zeros(self.feature_number(textual=True, manual=True))
+        result = np.zeros(self.feature_number(textual, manual))
 
         if textual:
             common = {key: value for key, value in collections.Counter(comment.processed_body.split(" ")).most_common() }
