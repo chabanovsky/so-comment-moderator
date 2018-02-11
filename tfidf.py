@@ -53,6 +53,8 @@ class DocsStats:
         for document in self.documents:
             document.vectorise(proto)
 
+    def dict_size(self):
+        return len(self.dataset)
 
 class Document:
     def __init__(self, stats, id, body, filtered_text):
@@ -60,8 +62,9 @@ class Document:
         self.body   = body
         self.filtered_text  = filtered_text
         self.tfs    = self.process_tf()
-        self.stats  = stats
-        self.stats.add(self)
+        if stats is not None:
+            self.stats  = stats
+            self.stats.add(self)
 
     def process_tf(self):
         text = self.filtered_text
@@ -81,5 +84,6 @@ class Document:
             else:
                 result.append(0.)
 
-        self.vector = np.zeros((1, len(result)))
-        self.vector[0] = np.array(result)
+        self.list_result = result
+        self.vector = np.zeros((1, len(self.list_result)))
+        self.vector[0] = np.array(self.list_result)

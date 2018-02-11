@@ -56,9 +56,9 @@ def load_comments_from_se_to_db():
     adder.done()
 
 def analyse_comments():
-    analyse_with_bayes_classifier()
+    #analyse_with_bayes_classifier()
     #analyse_with_cosine()
-    #analyse_with_logistic_regretion()
+    analyse_with_logistic_regretion()
 
 def analyse_with_bayes_classifier():
     rude_comments = SiteComment.rude_comments()
@@ -74,7 +74,7 @@ def analyse_with_logistic_regretion():
     
     classifier = LogisticRegaression(rude_comments, normal_comments, True)
     classifier.train()
-    rude_total, rude_right, normal_total, normal_right = classifier.test()
+    rude_total, rude_right, normal_total, normal_right = classifier.test(True)
 
     tpr = float(rude_right)/float(rude_total)
     tnr = float(normal_right)/float(normal_total)

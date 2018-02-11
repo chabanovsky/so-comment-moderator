@@ -24,7 +24,6 @@ class CosineSimilarity:
         else:
             return 0.
     
-
     def similar_documents(self):
         def closest_cosine(cosines, document, threshold):
             closest = threshold

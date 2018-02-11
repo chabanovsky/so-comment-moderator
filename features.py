@@ -4,8 +4,7 @@ import collections
 import math
 import numpy as np
 from operator import itemgetter
-from scipy import stats
-
+from tfidf import DocsStats, Document
 
 class SiteCommentFeatures:
     RUDE_CLASS = 1
@@ -18,19 +17,56 @@ class SiteCommentFeatures:
 
     manual_feature_number = 4
 
-    def __init__(self, rude_comments, normal_comments, verbose=False):
+    def __init__(self, rude_comments, normal_comments, use_tfidf=False, use_normal_words=False, verbose=False):
         self.rude_comments = rude_comments
         self.normal_comments = normal_comments
+        self.use_tfidf = use_tfidf
         self.verbose = verbose
+        self.use_normal_words = use_normal_words
 
+        if self.verbose:
+            print("[SiteCommentFeatures setup] tfidf: %s, norm/w: %s" % (str(self.use_tfidf), str(self.use_normal_words)))
+
+    def setup_tfidf(self):
+        self.stats = DocsStats()
+        self.docs = list()
+        for comment in self.rude_comments:
+            self.docs.append(
+                Document(self.stats, 
+                        comment.id, 
+                        comment.body, 
+                        comment.processed_body)
+            )
+
+        if self.use_normal_words:
+            for comment in self.normal_comments:
+                self.docs.append(
+                    Document(self.stats, 
+                            comment.id, 
+                            comment.body, 
+                            comment.processed_body)
+                )
+        self.stats.calculate_idfs()
+        self.stats.vectorise_documents()
+        self.tfidf_proto = self.stats.vector_proto()
+        self.textual_feature_number = self.stats.dict_size()
+        if self.verbose:
+            print("Text feature number: %s" % (str(self.textual_feature_number)))
+        
     def setup_textual(self):
+        if self.use_tfidf:
+            self.setup_tfidf()
+            return
+
         text = " ".join([comment.processed_body for comment in self.rude_comments])
-        #text += " ".join([comment.processed_body for comment in self.normal_comments])
+        if self.use_normal_words:
+            text += " ".join([comment.processed_body for comment in self.normal_comments])
         self.common = collections.Counter(text.split(" ")).most_common()
         self.words = [word for word, _ in sorted(self.common)]
-        if self.verbose:
-            print("Dict size: %s" % (str(len(self.words))))
         self.textual_feature_number = len(self.words)
+        if self.verbose:
+            print("Text feature number: %s" % (str(self.textual_feature_number)))
+
         
     def setup_manual(self):
         total = float(len(self.rude_comments))
@@ -87,17 +123,23 @@ class SiteCommentFeatures:
     def feature(self, comment, textual=True, manual=True):
         shift = 0
         result = np.zeros(self.feature_number(textual, manual))
-
         if textual:
-            common = {key: value for key, value in collections.Counter(comment.processed_body.split(" ")).most_common() }
-            for index, word in enumerate(self.words):
-                result[shift+index] = common.get(word, 0.)
+            if self.use_tfidf:
+                document = Document(None, comment.comment_id, comment.body, comment.processed_body)
+                document.process_tf()
+                document.vectorise(self.tfidf_proto)
+                for index, data in enumerate(document.list_result):
+                    result[shift+index] = data
+            else:
+                common = {key: value for key, value in collections.Counter(comment.processed_body.split(" ")).most_common() }
+                for index, word in enumerate(self.words):
+                    result[shift+index] = common.get(word, 0.)
             shift += self.textual_feature_number
         if manual:
             result[shift+SiteCommentFeatures.POST_AUTHOR_ID_FEATURE] = (self.rude_post_authors.get(comment.post_author_id, 0.) + 1.) / (len(self.rude_post_authors) + 2)
             result[shift+SiteCommentFeatures.COMMENT_AUTHOR_ID_FEATURE] = (self.rude_comment_authors.get(comment.author_id, 0.) + 1.) / (len(self.rude_comment_authors) + 2)
-            result[shift+SiteCommentFeatures.QA_FEATURE] = self.answer_prob if comment.answer_id > 0 else self.question_prob
-            result[shift+SiteCommentFeatures.POST_SCORE_FEATURE] = self.negative_prob if comment.post_score <= 0 else self.positive_prob
+            result[shift+SiteCommentFeatures.QA_FEATURE] = 0 if comment.answer_id > 0 else 1 #self.answer_prob if comment.answer_id > 0 else self.question_prob
+            result[shift+SiteCommentFeatures.POST_SCORE_FEATURE] = comment.post_score #self.negative_prob if comment.post_score <= 0 else self.positive_prob
 
         return result
 

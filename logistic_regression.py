@@ -18,7 +18,7 @@ class LogisticRegaression:
         self.rude_train, self.rude_test = rude_comments[:rude_border], rude_comments[rude_border:]
         self.normal_train, self.normal_test = normal_comments[:normal_border], normal_comments[normal_border:]
 
-        self.feature_maker = SiteCommentFeatures(self.rude_train, self.normal_train, self.verbose)
+        self.feature_maker = SiteCommentFeatures(self.rude_train, self.normal_train, True, True, self.verbose)
         self.feature_maker.setup()
         
     def train(self):
@@ -70,8 +70,14 @@ class LogisticRegaression:
         preds = int(np.round(LogisticRegaression.sigmoid(scores))[0])
         return preds == SiteCommentFeatures.RUDE_CLASS
 
-    def test(self):
-        rude_right = sum([1 if self.classify_rude(comment) else 0 for comment in self.rude_test])
+    def test(self, print_rude_errors=False):
+        rude_right = 0
+        for comment in self.rude_test:
+            if self.classify_rude(comment):
+                rude_right +=1
+            elif print_rude_errors:
+                print("[Rude error] [q: %s, s: %s] [%s] %s" % (str(0 if comment.answer_id > 0 else 1), str(comment.post_score), str(comment.processed_body), str(comment.body)))
+                
         normal_right = sum([0 if self.classify_rude(comment) else 1 for comment in self.normal_test ])
         return len(self.rude_test), rude_right, len(self.normal_test), normal_right
 
