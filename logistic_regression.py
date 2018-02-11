@@ -18,7 +18,7 @@ class LogisticRegaression:
         self.rude_train, self.rude_test = rude_comments[:rude_border], rude_comments[rude_border:]
         self.normal_train, self.normal_test = normal_comments[:normal_border], normal_comments[normal_border:]
 
-        self.feature_maker = SiteCommentFeatures(self.rude_train, self.normal_train, True, True, self.verbose)
+        self.feature_maker = SiteCommentFeatures(self.rude_train, self.normal_train, False, False, self.verbose)
         self.feature_maker.setup()
         
     def train(self):

@@ -3,6 +3,7 @@ import re
 import nltk
 import pymorphy2
 import collections
+from nltk.stem.snowball import SnowballStemmer 
 
 morph = pymorphy2.MorphAnalyzer()
 
@@ -41,6 +42,7 @@ def process_text(text, extended_filter=False, word_len_threshold=2):
     text = text.lower()
 
     sent_text = nltk.sent_tokenize(text)
+    stemmer = SnowballStemmer("russian")
     for sentence in sent_text:
         tokenized_text = nltk.word_tokenize(sentence)
         for token in tokenized_text:
@@ -51,7 +53,8 @@ def process_text(text, extended_filter=False, word_len_threshold=2):
             for sub_token in token.split():
                 processed = process(filter, sub_token, word_len_threshold)
                 if processed is not None:
-                    otput_data += " " + processed
+                    stemmed = stemmer.stem(processed)
+                    otput_data += " " + stemmed
         
     return otput_data
 

@@ -56,9 +56,9 @@ def load_comments_from_se_to_db():
     adder.done()
 
 def analyse_comments():
-    #analyse_with_bayes_classifier()
+    analyse_with_bayes_classifier()
     #analyse_with_cosine()
-    analyse_with_logistic_regretion()
+    #analyse_with_logistic_regretion()
 
 def analyse_with_bayes_classifier():
     rude_comments = SiteComment.rude_comments()
