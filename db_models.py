@@ -1,3 +1,4 @@
+# encoding:utf-8
 import datetime
 import collections
 import numpy as np
@@ -130,3 +131,12 @@ class SiteComment(db.Model):
         result = query.all()
         session.close()
         return result    
+
+    @staticmethod
+    def analysed_as_rude(limit=30):
+        session = db_session()
+        query = session.query(SiteComment).filter(SiteComment.analysed!=None).filter_by(looks_rude=True).order_by(desc(SiteComment.creation_date)).limit(limit)
+        result = query.all()
+        session.close()
+        return result    
+        

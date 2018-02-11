@@ -36,11 +36,13 @@ def comments():
 @application.route("/comments/feed", endpoint="comment_feed")
 @application.route("/comments/feed/", endpoint="comment_feed")
 def comment_feed():
-    comments = SiteComment.to_verify()
+    comments = SiteComment.analysed_as_rude()
     last_update = datetime.datetime.now()
     if len(comments) > 0:
         last_update = comments[0].analysed
-    return render_template('feed_proto.xml', app_title=FEED_APP_TITLE, so_url=SO_URL, last_update=last_update, entries=comments)
+    resp = make_response(render_template('feed_proto.xml', app_title=FEED_APP_TITLE, so_url=SO_URL, last_update=last_update, entries=comments))
+    resp.headers['Content-type'] = 'text/xml; charset=utf-8'
+    return resp
 
 @application.route("/features", endpoint="features")
 @application.route("/features/", endpoint="features")
