@@ -15,7 +15,7 @@ def filter_noise(text):
     text = re.sub('(https|http)?:\/\/.*', '', text)
     return text
 
-def process_text(text, extended_filter=False, word_len_threshold=2):
+def process_text(text, short_filter=False, word_len_threshold=2):
     global morph
 
     def process(filter, token, word_len_threshold):
@@ -30,10 +30,10 @@ def process_text(text, extended_filter=False, word_len_threshold=2):
             return None
         # http://pymorphy2.readthedocs.io/en/latest/user/grammemes.html
         if str(p.tag.POS) not in filter:
-            return  str(p.normal_form)  
+            return str(p.normal_form)  
 
     otput_data = ""
-    if extended_filter:
+    if short_filter:
         filter = ['PREP']
     else:    
         filter = ['NPRO', 'PREP', 'PRED', 'CONJ', 'PRCL', 'INTJ']
@@ -49,6 +49,10 @@ def process_text(text, extended_filter=False, word_len_threshold=2):
             
             token = token.replace('.', ' ')
             token = token.replace('/', ' ')
+            token = token.replace('=', ' ')
+            token = token.replace('`', ' ')
+            token = token.replace('-', ' ')
+            token = token.replace('–', ' ')
 
             for sub_token in token.split():
                 processed = process(filter, sub_token, word_len_threshold)
