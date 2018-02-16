@@ -36,7 +36,8 @@ def comments():
 @application.route("/comments/feed", endpoint="comment_feed")
 @application.route("/comments/feed/", endpoint="comment_feed")
 def comment_feed():
-    comments = SiteComment.analysed_as_rude()
+    limit = min(int(session.get("limit", 30)), 1000)
+    comments = SiteComment.analysed_as_rude(limit)
     last_update = datetime.datetime.now()
     if len(comments) > 0:
         last_update = comments[0].analysed
@@ -47,5 +48,4 @@ def comment_feed():
 @application.route("/features", endpoint="features")
 @application.route("/features/", endpoint="features")
 def features():
-    
     return render_template('features.html')

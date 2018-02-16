@@ -1,4 +1,6 @@
 # encoding:utf-8
+import datetime
+
 from se_api import get_recent_comments, get_post_infos
 from db_models import SiteComment, DBModelAdder
 from utils import process_text
@@ -58,10 +60,27 @@ def load_comments_from_se_to_db():
     adder.done()
 
 def analyse_comments():
+    classifier = None
     if CURRENT_MODEL == MODEL_NAIVE_BAYES:
-        analyse_with_bayes_classifier()
+        classifier = analyse_with_bayes_classifier()
     elif CURRENT_MODEL == MODEL_LOGISITIC_REGRESSION:
-        analyse_with_logistic_regresstion()
+        classifier = analyse_with_logistic_regression()
+
+    if classifier is None:
+        print ("Classifier is not set up. Set up classifier first.")
+        return
+
+    print("Model is ready. Starting analysis...")    
+    adder = DBModelAdder()
+    adder.start()
+    comments_for_analysis = SiteComment.comments_for_analysis()
+    for comment in comments_for_analysis:
+        comment.analysed = datetime.datetime.now()
+        comment.looks_rude = classifier.classify_rude(comment)
+        adder.add(comment)
+    adder.done()
+
+    print("Analysis was done for %s comments" % (str(len(comments_for_analysis))))        
 
 def analyse_with_bayes_classifier():
     rude_comments = SiteComment.rude_comments()
@@ -71,7 +90,9 @@ def analyse_with_bayes_classifier():
     classifier.train(rude_comments, normal_comments)
     classifier.print_params()
 
-def analyse_with_logistic_regresstion():
+    return classifier
+
+def analyse_with_logistic_regression():
     rude_comments = SiteComment.rude_comments()
     normal_comments = SiteComment.normal_comments()
     
@@ -83,14 +104,9 @@ def analyse_with_logistic_regresstion():
     tnr = float(normal_right)/float(normal_total)
     total_objects = float(rude_total + normal_total)
     acc = (rude_right/total_objects) * tpr + (normal_right/total_objects) * tnr
-
     print("Accuracy: %s, rude: %s (%s), normal: %s (%s) " % (str(acc), str(rude_right), str(rude_total), str(normal_right), str(normal_total)))
-
-    print("Model is ready. Starting analysis...")    
-    comments_for_analysis = SiteComment.comments_for_analysis()
-    for comment in comments_for_analysis:
-        if classifier.classify_rude(comment):
-            print(comment.body)
+    
+    return classifier
 
 def analyse_with_cosine():
     stats = DocsStats()

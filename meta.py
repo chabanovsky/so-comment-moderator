@@ -19,7 +19,7 @@ LANGUAGE = "ru"
 APP_URL = "http://benice.rudevs.ru"
 DB_NAME = "comment_moderator"
 FEED_APP_TITLE = ""
-SO_URL = "https://%stackoverflow.com" % (str(LANGUAGE + ".") if LANGUAGE != "en" else "")
+SO_URL = "https://%sstackoverflow.com" % (str(LANGUAGE + ".") if LANGUAGE != "en" else "")
 
 MODEL_NAIVE_BAYES = 0
 MODEL_LOGISITIC_REGRESSION = 1
