@@ -5,8 +5,8 @@
     <link rel="self" href="{{ so_url }}{{ url_for('comment_feed') }}" type="application/atom+xml" />
     <link rel="alternate" href="{{ so_url }}{{ url_for('comments') }}" type="text/html" />
     <subtitle></subtitle>
-    <updated>{{ last_update.isoformat('T') }}</updated>
-    <id>{{ url_for('comment_feed') }}</id>
+    <updated>{{ last_update.isoformat('T') }}Z</updated>
+    <id>{{ so_url }}{{ url_for('comment_feed') }}</id>
     {% for entry in entries %}
     <entry>
         <id>{{ so_url }}{% if entry.answer_id > 0 %}/a/{{ entry.answer_id }}{% else %}/q/{{ entry.question_id }}{% endif %}#comment-{{ entry.comment_id }}</id>
@@ -16,8 +16,8 @@
             <uri>{{ so_url }}/u/{{ entry.author_id }}</uri>
         </author>
         <link rel="alternate" href="{{ so_url }}{% if entry.answer_id > 0 %}/a/{{ entry.answer_id }}{% else %}/q/{{ entry.question_id }}{% endif %}#comment-{{ entry.comment_id }}" />
-        <published>{{ entry.creation_date.isoformat('T') }}</published>
-        <updated>{{ entry.analysed.isoformat('T') }}</updated>
+        <published>{{ entry.creation_date.isoformat('T') }}Z</published>
+        <updated>{{ entry.analysed.isoformat('T') }}Z</updated>
         <summary type="html">
             {{ entry.body }}
         </summary>

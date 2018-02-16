@@ -1,3 +1,4 @@
+# encoding:utf-8
 import os
 
 from flask import Flask
@@ -18,7 +19,7 @@ def make_db_engine():
 LANGUAGE = "ru"
 APP_URL = "http://benice.rudevs.ru"
 DB_NAME = "comment_moderator"
-FEED_APP_TITLE = ""
+FEED_APP_TITLE = "Comment Moderator"
 SO_URL = "https://%sstackoverflow.com" % (str(LANGUAGE + ".") if LANGUAGE != "en" else "")
 
 MODEL_NAIVE_BAYES = 0
