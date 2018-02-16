@@ -42,7 +42,7 @@ def comment_feed():
     if len(comments) > 0:
         last_update = comments[0].analysed
     resp = make_response(render_template('feed_proto.xml', app_title=FEED_APP_TITLE, so_url=SO_URL, last_update=last_update, entries=comments))
-    resp.headers['Content-type'] = 'text/xml; charset=utf-8'
+    resp.headers['Content-type'] = 'application/atom+xml; charset=utf-8'
     return resp
 
 @application.route("/features", endpoint="features")
