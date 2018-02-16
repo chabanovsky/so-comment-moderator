@@ -2,11 +2,11 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xmlns:creativeCommons="http://backend.userland.com/creativeCommonsRssModule" xmlns:re="http://purl.org/atompub/rank/1.0">
 
     <title type="text">{{ app_title }}</title>
-    <link rel="self" href="{{ so_url }}{{ url_for('comment_feed') }}" type="application/atom+xml" />
-    <link rel="alternate" href="{{ so_url }}{{ url_for('comments') }}" type="text/html" />
+    <link rel="self" href="{{ app_url }}{{ url_for('comment_feed') }}" type="application/atom+xml" />
+    <link rel="alternate" href="{{ app_url }}{{ url_for('comments') }}" type="text/html" />
     <subtitle></subtitle>
     <updated>{{ last_update.isoformat('T') }}Z</updated>
-    <id>{{ so_url }}{{ url_for('comment_feed') }}</id>
+    <id>{{ app_url }}{{ url_for('comment_feed') }}</id>
     {% for entry in entries %}
     <entry>
         <id>{{ so_url }}{% if entry.answer_id > 0 %}/a/{{ entry.answer_id }}{% else %}/q/{{ entry.question_id }}{% endif %}#comment-{{ entry.comment_id }}</id>
