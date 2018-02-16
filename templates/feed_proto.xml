@@ -10,7 +10,7 @@
     {% for entry in entries %}
     <entry>
         <id>{{ so_url }}{% if entry.answer_id > 0 %}/a/{{ entry.answer_id }}{% else %}/q/{{ entry.question_id }}{% endif %}#comment-{{ entry.comment_id }}</id>
-        <title type="text">{% if entry.title != '' %}{{ entry.title }}{% else %}{{ entry.author_name }} опубликовал сомнитеьный комментарий{% endif %}</title>
+        <title type="text">{% if entry.title != '' %}{{ entry.title|safe }}{% else %}{{ entry.author_name }} опубликовал сомнитеьный комментарий{% endif %}</title>
         <author>
             <name>{{ entry.author_name }}</name>
             <uri>{{ so_url }}/u/{{ entry.author_id }}</uri>
