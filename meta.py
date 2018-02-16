@@ -19,7 +19,7 @@ def make_db_engine():
 LANGUAGE = "ru"
 APP_URL = "http://benice.rudevs.ru"
 DB_NAME = "comment_moderator"
-FEED_APP_TITLE = "Comment Moderator"
+FEED_APP_TITLE = u"Модератор комментариев"
 SO_URL = "https://%sstackoverflow.com" % (str(LANGUAGE + ".") if LANGUAGE != "en" else "")
 
 MODEL_NAIVE_BAYES = 0
