@@ -8,6 +8,8 @@ from cosine_similarity import CosineSimilarity
 from naive_bayes_classifier import BinaryNaiveBayesClassifier
 from logistic_regression import LogisticRegaression
 
+from meta import MODEL_LOGISITIC_REGRESSION, MODEL_NAIVE_BAYES, CURRENT_MODEL
+
 
 
 def load_comments_from_se_to_db():
@@ -56,9 +58,10 @@ def load_comments_from_se_to_db():
     adder.done()
 
 def analyse_comments():
-    #analyse_with_bayes_classifier()
-    #analyse_with_cosine()
-    analyse_with_logistic_regretion()
+    if CURRENT_MODEL == MODEL_NAIVE_BAYES:
+        analyse_with_bayes_classifier()
+    elif CURRENT_MODEL == MODEL_LOGISITIC_REGRESSION:
+        analyse_with_logistic_regresstion()
 
 def analyse_with_bayes_classifier():
     rude_comments = SiteComment.rude_comments()
@@ -68,7 +71,7 @@ def analyse_with_bayes_classifier():
     classifier.train(rude_comments, normal_comments)
     classifier.print_params()
 
-def analyse_with_logistic_regretion():
+def analyse_with_logistic_regresstion():
     rude_comments = SiteComment.rude_comments()
     normal_comments = SiteComment.normal_comments()
     
@@ -83,11 +86,11 @@ def analyse_with_logistic_regretion():
 
     print("Accuracy: %s, rude: %s (%s), normal: %s (%s) " % (str(acc), str(rude_right), str(rude_total), str(normal_right), str(normal_total)))
 
-#    print("Analyse real comments:")    
-#    unverified_comments = SiteComment.unverified_comments()
-#    for comment in unverified_comments:
-#        if classifier.classify_rude(comment):
-#            print(comment.body)
+    print("Model is ready. Starting analysis...")    
+    comments_for_analysis = SiteComment.comments_for_analysis()
+    for comment in comments_for_analysis:
+        if classifier.classify_rude(comment):
+            print(comment.body)
 
 def analyse_with_cosine():
     stats = DocsStats()
@@ -101,7 +104,7 @@ def analyse_with_cosine():
                     comment.processed_body)
         )
 
-    unverified_comments = SiteComment.unverified_comments()
+    unverified_comments = SiteComment.comments_for_analysis()
     unverified_docs = list()
     for comment in unverified_comments:
         unverified_docs.append(

@@ -80,10 +80,14 @@ class CSVDataUploader:
                     author_id = int(author_id)
                     post_author_id = int(post_author_id)
                     diff_with_post = int(diff_with_post)
-
+                    
                     data = json.loads(post_link)
-                    post_id = int(data.get('id'))
-                    post_title = data.get('title')
+                    if type(data) is int:
+                        post_id = data    
+                        post_title = ""
+                    else:
+                        post_id = int(data.get('id'))
+                        post_title = data.get('title')
                 except ValueError:
                     continue
 

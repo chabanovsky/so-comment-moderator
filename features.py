@@ -17,8 +17,9 @@ class SiteCommentFeatures:
     QA_FEATURE                  = 2 # 3. Question (0) or answer (1)
     POST_SCORE_FEATURE          = 3 # 4. Post score
     RUDE_WORD_FEATURE           = 4
-
-    manual_feature_number = 5
+    SEND_TO_SEARCH_FEATURE      = 5
+    
+    manual_feature_number = 6
 
     def __init__(self, rude_comments, normal_comments, use_tfidf=False, use_normal_words=False, verbose=False):
         self.rude_comments = rude_comments
@@ -26,7 +27,8 @@ class SiteCommentFeatures:
         self.use_tfidf = use_tfidf
         self.verbose = verbose
         self.use_normal_words = use_normal_words
-        self.asterisk_regexp = re.compile('[^ ,^\*]\*[^ ,^\*]', flags=re.DOTALL)
+        self.search_regexp = re.compile("|".join(CommentStaticData.serach_links), flags=re.DOTALL)
+        self.reply_regexp = re.compile("@[^@]+", flags=re.DOTALL)
 
         if self.verbose:
             print("[SiteCommentFeatures setup] tfidf: %s, norm/w: %s" % (str(self.use_tfidf), str(self.use_normal_words)))
@@ -142,10 +144,14 @@ class SiteCommentFeatures:
         if manual:
             result[shift+SiteCommentFeatures.POST_AUTHOR_ID_FEATURE] = (self.rude_post_authors.get(comment.post_author_id, 0.) + 1.) / (len(self.rude_post_authors) + 2)
             result[shift+SiteCommentFeatures.COMMENT_AUTHOR_ID_FEATURE] = (self.rude_comment_authors.get(comment.author_id, 0.) + 1.) / (len(self.rude_comment_authors) + 2)
-            result[shift+SiteCommentFeatures.QA_FEATURE] = 0 if comment.answer_id > 0 else 1 #self.answer_prob if comment.answer_id > 0 else self.question_prob
-            result[shift+SiteCommentFeatures.POST_SCORE_FEATURE] = comment.post_score #self.negative_prob if comment.post_score <= 0 else self.positive_prob
+            result[shift+SiteCommentFeatures.QA_FEATURE] = 0 if comment.answer_id > 0 else 1
+            result[shift+SiteCommentFeatures.POST_SCORE_FEATURE] = comment.post_score 
             rude_words = CommentStaticData.processed_rude_words()
             result[shift+SiteCommentFeatures.RUDE_WORD_FEATURE] = sum([1 if word in rude_words else 0 for word in comment.processed_body.split(' ')])
+            result[shift+SiteCommentFeatures.SEND_TO_SEARCH_FEATURE] = len(self.search_regexp.findall(comment.body))
+            #result[shift+SiteCommentFeatures.PARSED_WORD_DICT_LEN_FEATURE] = float(len(comment.processed_body.split()))/float(len(comment.body.split()))
+            #if result[shift+SiteCommentFeatures.SEND_TO_SEARCH_FEATURE] > 0:
+            #    print("[Found a search link] %s" % (str(comment.body)))
 
         return result
 

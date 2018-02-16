@@ -26,7 +26,7 @@ def process_text(text, short_filter=False, word_len_threshold=2):
             return None
         
         # http://pymorphy2.readthedocs.io/en/latest/user/grammemes.html
-        if any(tag in str(p.tag) for tag in ['PNCT', 'NUMB', 'UNKN']): # ['LATN', 'PNCT', 'NUMB', 'UNKN']
+        if any(tag in str(p.tag) for tag in ['PNCT', 'NUMB']): # ['LATN', 'PNCT', 'NUMB', 'UNKN']
             return None
         # http://pymorphy2.readthedocs.io/en/latest/user/grammemes.html
         if str(p.tag.POS) not in filter:
@@ -36,7 +36,7 @@ def process_text(text, short_filter=False, word_len_threshold=2):
     if short_filter:
         filter = ['PREP']
     else:    
-        filter = ['NPRO', 'PREP', 'PRED', 'CONJ', 'PRCL', 'INTJ']
+        filter = ['NPRO', 'PREP', 'PRED', 'CONJ', 'PRCL']
 
     text = filter_noise(text)
     text = text.lower()
