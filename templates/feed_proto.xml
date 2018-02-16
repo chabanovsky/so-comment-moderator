@@ -4,7 +4,7 @@
     <title type="text">{{ app_title }}</title>
     <link rel="self" href="{{ app_url }}{{ url_for('comment_feed') }}" type="application/atom+xml" />
     <link rel="alternate" href="{{ app_url }}{{ url_for('comments') }}" type="text/html" />
-    <subtitle></subtitle>
+    <subtitle>{{ app_title }}</subtitle>
     <updated>{{ last_update.isoformat('T') }}Z</updated>
     <id>{{ app_url }}{{ url_for('comment_feed') }}</id>
     {% for entry in entries %}
