@@ -1,7 +1,6 @@
 # encoding:utf-8
 import datetime
 import collections
-import numpy as np
 import csv
 
 import logging
