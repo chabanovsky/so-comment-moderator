@@ -7,6 +7,11 @@ Basically for a long time I had been reviewing most of the posts on Stack Overfl
 Over that time I found that it's really hard for some people to keep calm when they see something, let's say, not 100% suitable for our site. I mean, badly written questions. The people may sometimes forget that if one writes poor questions that means one and only one thing — this person writes poor questions. It does not mean that the person is a "bad" one. Currently I cannot do so anymore because of the number of comments. On the other hand with more and more new users that visit the site very day the need for moderation increases. I hope this robo–moderator will help us keep kindness atmosphere in the community regardless any obstacles in our way!
 
 
+# Take A Look At It Live
+
+As it's said: first rule of a ML project is do not use ML in the project! The app is live with the besic model ever https://chat.stackexchange.com/rooms/73258/
+
+
 # Specification
 
 ## Core Features
