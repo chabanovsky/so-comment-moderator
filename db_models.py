@@ -153,4 +153,27 @@ class SiteComment(db.Model):
         result = query.all()
         session.close()
         return result    
-        
+
+
+class JSONObjectData(db.Model):
+    __tablename__ = 'json_object_data'
+    FEATURE_TYPE_ID = 0
+    LOGREG_TYPE_ID  = 1
+    
+    id          = Column(Integer, primary_key=True)
+    type_id     = Column(Integer)
+    object_json = Column(String)
+    added       = Column(DateTime, default=datetime.datetime.now)
+
+    def __init__(self, type_id, object_json):
+        self.type_id    = type_id
+        self.object_json= object_json
+        self.added      = datetime.datetime.now()
+
+    @staticmethod
+    def last(type_id):
+        session = db_session()
+        query = session.query(JSONObjectData).filter(JSONObjectData.type_id==type_id).order_by(desc(JSONObjectData.added))
+        result = query.first()
+        session.close()
+        return result    

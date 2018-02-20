@@ -56,6 +56,26 @@ class DocsStats:
     def dict_size(self):
         return len(self.dataset)
 
+    def store(self):
+        return {
+            "indexes": self.indexes,
+            "dataset": self.indexes,
+            "word_to_index": self.word_to_index,
+            "index_to_word": self.index_to_word,
+            "idfs": self.idfs
+        }
+
+    @staticmethod
+    def restore(data):
+        obj = DocsStats()
+        obj.indexes        = data.get("indexes")
+        obj.dataset        = data.get("dataset")
+        obj.word_to_index  = data.get("word_to_index")
+        obj.index_to_word  = data.get("index_to_word")
+        obj.idfs           = data.get("idfs")
+        
+        return obj
+
 class Document:
     def __init__(self, stats, id, body, filtered_text):
         self.id     = id

@@ -21,6 +21,7 @@ from flask.ext.sqlalchemy import Pagination
 from meta import app as application, db, db_session, engine, FEED_APP_TITLE, APP_URL, SO_URL
 
 from db_models import SiteComment
+from api import *
 
 @application.route("/", endpoint="index")
 @application.route("/index", endpoint="index")

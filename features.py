@@ -21,14 +21,19 @@ class SiteCommentFeatures:
     
     manual_feature_number = 6
 
-    def __init__(self, rude_comments, normal_comments, use_tfidf=False, use_normal_words=False, verbose=False):
-        self.rude_comments = rude_comments
-        self.normal_comments = normal_comments
-        self.use_tfidf = use_tfidf
-        self.verbose = verbose
-        self.use_normal_words = use_normal_words
-        self.search_regexp = re.compile("|".join(CommentStaticData.serach_links), flags=re.DOTALL)
-        self.reply_regexp = re.compile("@[^@]+", flags=re.DOTALL)
+    def __init__(self, rude_comments, normal_comments, textual=True, manual=True, use_tfidf=False, use_normal_words=False, verbose=False):
+        self.rude_comments  = rude_comments
+        self.normal_comments= normal_comments
+        self.textual        = textual
+        self.manual         = manual
+        self.use_tfidf      = use_tfidf
+        self.verbose        = verbose
+        self.use_normal_words  = use_normal_words
+        self.search_regexp  = re.compile("|".join(CommentStaticData.serach_links), flags=re.DOTALL)
+        self.reply_regexp   = re.compile("@[^@]+", flags=re.DOTALL)
+        self.stats          = None
+        self.common         = None
+        self.words          = None
 
         if self.verbose:
             print("[SiteCommentFeatures setup] tfidf: %s, norm/w: %s" % (str(self.use_tfidf), str(self.use_normal_words)))
@@ -118,18 +123,18 @@ class SiteCommentFeatures:
         self.setup_textual()
         self.setup_manual()
 
-    def feature_number(self, textual=True, manual=True):
+    def feature_number(self):
         feature_number = 0
-        if textual:
+        if self.textual:
             feature_number = self.textual_feature_number
-        if manual:
+        if self.manual:
             feature_number += SiteCommentFeatures.manual_feature_number
         return feature_number
 
-    def feature(self, comment, textual=True, manual=True):
+    def feature(self, comment):
         shift = 0
-        result = np.zeros(self.feature_number(textual, manual))
-        if textual:
+        result = np.zeros(self.feature_number())
+        if self.textual:
             if self.use_tfidf:
                 document = Document(None, comment.comment_id, comment.body, comment.processed_body)
                 document.process_tf()
@@ -137,11 +142,13 @@ class SiteCommentFeatures:
                 for index, data in enumerate(document.list_result):
                     result[shift+index] = data
             else:
-                common = {key: value for key, value in collections.Counter(comment.processed_body.split(" ")).most_common() }
+                common = {
+                    key: value for key, value in collections.Counter(comment.processed_body.split(" ")).most_common() 
+                }
                 for index, word in enumerate(self.words):
                     result[shift+index] = common.get(word, 0.)
             shift += self.textual_feature_number
-        if manual:
+        if self.manual:
             result[shift+SiteCommentFeatures.POST_AUTHOR_ID_FEATURE] = (self.rude_post_authors.get(comment.post_author_id, 0.) + 1.) / (len(self.rude_post_authors) + 2)
             result[shift+SiteCommentFeatures.COMMENT_AUTHOR_ID_FEATURE] = (self.rude_comment_authors.get(comment.author_id, 0.) + 1.) / (len(self.rude_comment_authors) + 2)
             result[shift+SiteCommentFeatures.QA_FEATURE] = 0 if comment.answer_id > 0 else 1
@@ -155,3 +162,35 @@ class SiteCommentFeatures:
 
         return result
 
+    def store(self):
+        return {
+            "stats": self.stats.store() if self.stats is not None else None,
+            "common": self.common,
+            "textual_feature_number": self.textual_feature_number,
+            "textual": self.textual,
+            "manual": self.manual,
+            "use_tfidf": self.use_tfidf,
+            "use_normal_words": self.use_normal_words,
+            "rude_post_authors": self.rude_post_authors,
+            "rude_comment_authors": self.rude_comment_authors
+        }
+
+    @staticmethod
+    def restore(data, verbose=False):
+        obj = SiteCommentFeatures(
+            None, None,
+            data.get('textual'),
+            data.get('manual'),
+            data.get('use_tfidf'),
+            data.get('use_normal_words'),
+            verbose
+        )        
+
+        obj.stats = DocsStats.restore(data.get('stats')) if data.get('stats') is not None else None
+        obj.common = data.get('common')
+        obj.words = [word for word, _ in sorted(obj.common)] if obj.common is not None else None
+        obj.textual_feature_number = data.get('textual_feature_number')
+        obj.rude_post_authors = data.get('rude_post_authors')
+        obj.rude_comment_authors = data.get('rude_comment_authors')
+
+        return obj

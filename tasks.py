@@ -1,18 +1,19 @@
 # encoding:utf-8
 import datetime
+import json
 
 from se_api import get_recent_comments, get_post_infos
-from db_models import SiteComment, DBModelAdder
+from db_models import SiteComment, DBModelAdder, JSONObjectData
 from utils import process_text
 
 from tfidf import DocsStats, Document
 from cosine_similarity import CosineSimilarity
 from naive_bayes_classifier import BinaryNaiveBayesClassifier
 from logistic_regression import LogisticRegaression
+from features import SiteCommentFeatures
+from feature_list import SiteCommentFeatureList
 
 from meta import MODEL_LOGISITIC_REGRESSION, MODEL_NAIVE_BAYES, CURRENT_MODEL
-
-
 
 def load_comments_from_se_to_db():
     def make_site_comment_params(comment, info):
@@ -61,10 +62,11 @@ def load_comments_from_se_to_db():
 
 def analyse_comments():
     classifier = None
-    if CURRENT_MODEL == MODEL_NAIVE_BAYES:
-        classifier = analyse_with_bayes_classifier()
-    elif CURRENT_MODEL == MODEL_LOGISITIC_REGRESSION:
+        
+    if CURRENT_MODEL == MODEL_LOGISITIC_REGRESSION:
         classifier = analyse_with_logistic_regression()
+#    elif CURRENT_MODEL == MODEL_NAIVE_BAYES:
+#        classifier = analyse_with_bayes_classifier()       
 
     if classifier is None:
         print ("Classifier is not set up. Set up classifier first.")
@@ -93,18 +95,44 @@ def analyse_with_bayes_classifier():
     return classifier
 
 def analyse_with_logistic_regression():
-    rude_comments = SiteComment.rude_comments()
-    normal_comments = SiteComment.normal_comments()
+    classifier = None
+    feature_maker = None
+    saved_data = JSONObjectData.last(JSONObjectData.LOGREG_TYPE_ID)
+    feature_saved_data = JSONObjectData.last(JSONObjectData.FEATURE_TYPE_ID)
     
-    classifier = LogisticRegaression(rude_comments, normal_comments, True)
-    classifier.train()
-    rude_total, rude_right, normal_total, normal_right = classifier.test(True)
+    
+    if saved_data is None or feature_saved_data is None:
+        feature_list = SiteCommentFeatureList(
+            SiteComment.rude_comments(), 
+            SiteComment.normal_comments()
+        )
+        feature_maker = feature_list.maker()
 
-    tpr = float(rude_right)/float(rude_total)
-    tnr = float(normal_right)/float(normal_total)
-    total_objects = float(rude_total + normal_total)
-    acc = (rude_right/total_objects) * tpr + (normal_right/total_objects) * tnr
-    print("Accuracy: %s, rude: %s (%s), normal: %s (%s) " % (str(acc), str(rude_right), str(rude_total), str(normal_right), str(normal_total)))
+        classifier = LogisticRegaression(feature_list, feature_maker, True)
+        classifier.train()
+        rude_total, rude_right, normal_total, normal_right = classifier.test(True)
+
+        tpr = float(rude_right)/float(rude_total)
+        tnr = float(normal_right)/float(normal_total)
+        total_objects = float(rude_total + normal_total)
+        acc = (rude_right/total_objects) * tpr + (normal_right/total_objects) * tnr
+        print("Accuracy: %s, rude: %s (%s), normal: %s (%s) " % (str(acc), str(rude_right), str(rude_total), str(normal_right), str(normal_total)))
+        adder = DBModelAdder()
+        adder.start()
+        
+        feature_data = feature_maker.store()
+        json_fd = JSONObjectData(JSONObjectData.FEATURE_TYPE_ID, json.dumps(feature_data))
+        adder.add(json_fd)
+        
+        classifier_data = classifier.store()
+        json_cd = JSONObjectData(JSONObjectData.LOGREG_TYPE_ID, json.dumps(classifier_data))
+        adder.add(json_cd)
+
+        adder.done()
+    else:
+        feature_maker = SiteCommentFeatures.restore(json.loads(feature_saved_data.object_json), True)
+        classifier = LogisticRegaression.restore(json.loads(saved_data.object_json), feature_maker, True)
+
     
     return classifier
 
