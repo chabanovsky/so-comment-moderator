@@ -104,6 +104,7 @@ def analyse_comments():
         return
 
     print("Model is ready. Starting analysis...")    
+    suspected = 0
     adder = DBModelAdder()
     adder.start()
     comments_for_analysis = SiteComment.comments_for_analysis()
@@ -111,9 +112,11 @@ def analyse_comments():
         comment.analysed = datetime.datetime.now()
         comment.looks_rude = classifier.classify_rude(comment)
         adder.add(comment)
+        if comment.looks_rude:
+            suspected += 1
     adder.done()
 
-    print("Analysis was done for %s comments" % (str(len(comments_for_analysis))))        
+    print("Analysis was done for %s comments, %s suspected to be rude." % (str(len(comments_for_analysis)), str(suspected) ))        
 
 def analyse_with_bayes_classifier():
     rude_comments = SiteComment.rude_comments()
