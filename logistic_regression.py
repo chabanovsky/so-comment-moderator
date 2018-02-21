@@ -9,7 +9,7 @@ from scipy import stats
 from features import SiteCommentFeatures
 
 class LogisticRegaression:
-    def __init__(self, feature_list, feature_maker, verbose=False, num_steps=50000, learning_rate=5e-5):
+    def __init__(self, feature_list, feature_maker, verbose=False, num_steps=30000, learning_rate=5e-5):
         self.verbose = verbose
         self.num_steps = num_steps 
         self.learning_rate = learning_rate
