@@ -33,7 +33,7 @@ if __name__ == "__main__":
             analyse_comments() 
             sys.exit()   
 
-        if str(sys.argv[1]) == "--create_model":
+        if str(sys.argv[1]) == "--create-model":
             create_model() 
             sys.exit() 
 
