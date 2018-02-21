@@ -60,13 +60,44 @@ def load_comments_from_se_to_db():
 
     adder.done()
 
+def create_model():
+    if CURRENT_MODEL == MODEL_LOGISITIC_REGRESSION:
+        feature_list = SiteCommentFeatureList(
+            SiteComment.rude_comments(), 
+            SiteComment.normal_comments()
+        )
+        feature_maker = feature_list.maker()
+
+        classifier = LogisticRegaression(feature_list, feature_maker, True)
+        classifier.train()
+        rude_total, rude_right, normal_total, normal_right = classifier.test(True)
+
+        tpr = float(rude_right)/float(rude_total)
+        tnr = float(normal_right)/float(normal_total)
+        total_objects = float(rude_total + normal_total)
+        acc = (rude_right/total_objects) * tpr + (normal_right/total_objects) * tnr
+        print("Accuracy: %s, rude: %s (%s), normal: %s (%s) " % (str(acc), str(rude_right), str(rude_total), str(normal_right), str(normal_total)))
+        adder = DBModelAdder()
+        adder.start()
+        
+        feature_data = feature_maker.store()
+        json_fd = JSONObjectData(JSONObjectData.FEATURE_TYPE_ID, json.dumps(feature_data))
+        adder.add(json_fd)
+        
+        classifier_data = classifier.store()
+        json_cd = JSONObjectData(JSONObjectData.LOGREG_TYPE_ID, json.dumps(classifier_data))
+        adder.add(json_cd)
+
+        adder.done()
+        print("A new logistic regression classifier was added to the DB.")
+    else:
+        print("Please specify a model to create first.")
+
 def analyse_comments():
     classifier = None
         
     if CURRENT_MODEL == MODEL_LOGISITIC_REGRESSION:
-        classifier = analyse_with_logistic_regression()
-#    elif CURRENT_MODEL == MODEL_NAIVE_BAYES:
-#        classifier = analyse_with_bayes_classifier()       
+        classifier = analyse_with_logistic_regression()     
 
     if classifier is None:
         print ("Classifier is not set up. Set up classifier first.")
@@ -95,44 +126,21 @@ def analyse_with_bayes_classifier():
     return classifier
 
 def analyse_with_logistic_regression():
-    classifier = None
-    feature_maker = None
     saved_data = JSONObjectData.last(JSONObjectData.LOGREG_TYPE_ID)
     feature_saved_data = JSONObjectData.last(JSONObjectData.FEATURE_TYPE_ID)
-    
-    
     if saved_data is None or feature_saved_data is None:
-        feature_list = SiteCommentFeatureList(
-            SiteComment.rude_comments(), 
-            SiteComment.normal_comments()
-        )
-        feature_maker = feature_list.maker()
-
-        classifier = LogisticRegaression(feature_list, feature_maker, True)
-        classifier.train()
-        rude_total, rude_right, normal_total, normal_right = classifier.test(True)
-
-        tpr = float(rude_right)/float(rude_total)
-        tnr = float(normal_right)/float(normal_total)
-        total_objects = float(rude_total + normal_total)
-        acc = (rude_right/total_objects) * tpr + (normal_right/total_objects) * tnr
-        print("Accuracy: %s, rude: %s (%s), normal: %s (%s) " % (str(acc), str(rude_right), str(rude_total), str(normal_right), str(normal_total)))
-        adder = DBModelAdder()
-        adder.start()
-        
-        feature_data = feature_maker.store()
-        json_fd = JSONObjectData(JSONObjectData.FEATURE_TYPE_ID, json.dumps(feature_data))
-        adder.add(json_fd)
-        
-        classifier_data = classifier.store()
-        json_cd = JSONObjectData(JSONObjectData.LOGREG_TYPE_ID, json.dumps(classifier_data))
-        adder.add(json_cd)
-
-        adder.done()
-    else:
-        feature_maker = SiteCommentFeatures.restore(json.loads(feature_saved_data.object_json), True)
-        classifier = LogisticRegaression.restore(json.loads(saved_data.object_json), feature_maker, True)
-
+        return None
+    print(
+        "Restoring a logistic regression classifyer. The classifyer id: %s from %s; features: id %s, from %s" 
+            % ( 
+                str(saved_data.id), 
+                str(saved_data.added.strftime("%d %b %Y %H:%M:%S")), 
+                str(feature_saved_data.id), 
+                str(feature_saved_data.added.strftime("%d %b %Y %H:%M:%S")) 
+            ) 
+    )
+    feature_maker = SiteCommentFeatures.restore(json.loads(feature_saved_data.object_json), True)
+    classifier = LogisticRegaression.restore(json.loads(saved_data.object_json), feature_maker, True)
     
     return classifier
 

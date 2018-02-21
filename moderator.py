@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
 
 from csv_data_uploader import CSVDataUploader
 from database import init_db
-from tasks import load_comments_from_se_to_db, analyse_comments
+from tasks import load_comments_from_se_to_db, analyse_comments, create_model
 
 from meta import *
 from views import *
@@ -20,6 +20,7 @@ if __name__ == "__main__":
             uploader = CSVDataUploader()
             uploader.cvs_to_db()
             sys.exit()
+
         if str(sys.argv[1]) == "--init-db":
             init_db() 
             sys.exit()   
@@ -31,5 +32,12 @@ if __name__ == "__main__":
         if str(sys.argv[1]) == "--analyse":
             analyse_comments() 
             sys.exit()   
+
+        if str(sys.argv[1]) == "--create_model":
+            create_model() 
+            sys.exit() 
+
+        print("Wrong parameters. Check the spelling.")
+        sys.exit()
 
     app.run()
