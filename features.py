@@ -21,12 +21,12 @@ class SiteCommentFeatures:
     
     manual_feature_number = 6
     feature_descs = {
-        POST_AUTHOR_ID_FEATURE: "Parent post author id",
-        COMMENT_AUTHOR_ID_FEATURE: "Comment author id",
-        QA_FEATURE: "Question or answer",
-        POST_SCORE_FEATURE: "Parent post score",
-        RUDE_WORD_FEATURE: "Num of rude words",
-        SEND_TO_SEARCH_FEATURE: "Is there link to a search engine"
+        POST_AUTHOR_ID_FEATURE: u"Автор родительского сообщения",
+        COMMENT_AUTHOR_ID_FEATURE: u"Автор комментария",
+        QA_FEATURE: u"Вопрос или ответ",
+        POST_SCORE_FEATURE: u"Рейтинг родительского сообщения",
+        RUDE_WORD_FEATURE: u"Кол–во грубых слов",
+        SEND_TO_SEARCH_FEATURE: u"Отсылка к поиску"
     }
 
     def __init__(self, rude_comments, normal_comments, textual=True, manual=True, use_tfidf=False, use_normal_words=False, verbose=False):

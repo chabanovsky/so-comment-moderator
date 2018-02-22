@@ -1,19 +1,19 @@
 FEATURE_ENPOINT = "/api/features";
+SCORE_FEATURE
 
 $(document).ready(function() {
     loadHelper(FEATURE_ENPOINT + "?x=3&y=4",
         function(data){
             drawFeature(
                 "manual-feutures",
-                "Score & Rude Words",
+                "Рейтинг сообщения к количеству грубых слов в комментарии",
                 data.x_name,
                 data.y_name,
                 data.positive,
                 data.negative,
-                "Rude comments",
-                "Normal comments" 
+                "Оскорбление",
+                "Обычный комментарий" 
             )
-
         },
         function(){
             alert("Could not load feature data.")
