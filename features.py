@@ -20,6 +20,14 @@ class SiteCommentFeatures:
     SEND_TO_SEARCH_FEATURE      = 5
     
     manual_feature_number = 6
+    feature_descs = {
+        POST_AUTHOR_ID_FEATURE: "Parent post author id",
+        COMMENT_AUTHOR_ID_FEATURE: "Comment author id",
+        QA_FEATURE: "Question or answer",
+        POST_SCORE_FEATURE: "Parent post score",
+        RUDE_WORD_FEATURE: "Num of rude words",
+        SEND_TO_SEARCH_FEATURE: "Is there link to a search engine"
+    }
 
     def __init__(self, rude_comments, normal_comments, textual=True, manual=True, use_tfidf=False, use_normal_words=False, verbose=False):
         self.rude_comments  = rude_comments
@@ -162,6 +170,13 @@ class SiteCommentFeatures:
 
         return result
 
+    def manual_feature_value(self, features, feature_id):
+        shift = 0
+        if self.textual:
+            shift += self.textual_feature_number
+        
+        return features[shift+feature_id]
+
     def store(self):
         return {
             "stats": self.stats.store() if self.stats is not None else None,
@@ -194,3 +209,8 @@ class SiteCommentFeatures:
         obj.rude_comment_authors = data.get('rude_comment_authors')
 
         return obj
+
+    @staticmethod
+    def feature_desc(feature_id):
+        return SiteCommentFeatures.feature_descs.get(feature_id)
+    

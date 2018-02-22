@@ -44,8 +44,8 @@ class CommentStaticData:
         if CommentStaticData.processed_rude_word_list is not None:
             return CommentStaticData.processed_rude_word_list
 
-        CommentStaticData.processed_rude_word_list = [word for word in process_text(' '.join(CommentStaticData.rude_word_list)).split(' ') if len(word.strip()) > 0]
-        CommentStaticData.processed_rude_word_list.extend([word for word in process_text(' '.join(CommentStaticData.additional_stop_words)).split(' ') if len(word.strip()) > 0])
+        CommentStaticData.processed_rude_word_list = [word for word in process_text(u' '.join(CommentStaticData.rude_word_list)).split(' ') if len(word.strip()) > 0]
+        CommentStaticData.processed_rude_word_list.extend([word for word in process_text(u' '.join(CommentStaticData.additional_stop_words)).split(' ') if len(word.strip()) > 0])
 
         print("[Rude word list] %s" % (str(CommentStaticData.processed_rude_word_list)))
         return CommentStaticData.processed_rude_word_list

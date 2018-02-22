@@ -3,13 +3,17 @@
 {% if g.user and (g.user.role == "moderator" or g.user.role == "employe") %}
 <script type="text/javascript" async="" src="/m/scripts/review_tools.js"></script>
 {% endif %}
+{% if  "features" == active_tab  %}
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script type="text/javascript" async="" src="/m/scripts/feature_analysis.js"></script>
+{% endif %}
 {% endblock %} 
 {% block title %}Модератор комментариев{% endblock %} 
 {% block content %}
 <div>
     <div class="main-menu">
         <div id="tabs">
-            <a {% if "index" in active_tab %}class="active" {% endif %} href="{{ url_for('index') }}">Главная</a>
+            <a {% if "index" in active_tab %}class="active" {% endif %} href="/">Главная</a>
             {% if g.user %}
                 <a {% if "features" in active_tab %}class="active" {% endif %} href="{{ url_for('features') }}">Признаки</a>
                 {% if g.user.role == "moderator" or g.user.role == "employe" %}
@@ -71,7 +75,7 @@
     {% endfor %}
 {% elif  "features" == active_tab  %}
     <div>
-        <div id="manual-feutures" style="height: 570px; width: 100%;"></div>
+        <div id="manual-feutures" style="height: 570px; width: 100%;"><div class="wait">Информация загружается...</div></div>
     </div>
 {% endif %}    
 

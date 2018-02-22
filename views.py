@@ -63,7 +63,7 @@ def comment_feed():
 def features():
     if g.user is None:
         return redirect(url_for('index'))  
-    return render_template('features.html', active_tab="features")
+    return render_template('index.html', active_tab="features")
 
 @application.route("/verifying", endpoint="verifying")
 @application.route("/verifying/", endpoint="verifying")
@@ -79,18 +79,15 @@ def verifying():
 @application.route("/actions/actions_verify/<comment_id>/", endpoint="actions_verify")
 def actions_verify(comment_id):
     if g.user is None or g.user.role != "moderator":
-        logging.error("User is not authorised")
         abort(404)
 
     if request.args.get("is_rude", None) is None:
-        logging.error("is_rude is None")
         abort(404)
 
     is_rude = bool(request.args.get("is_rude"))
 
     comment = SiteComment.by_comment_id(comment_id)
     if comment is None:
-        logging.error("Comment not found")
         abort(404)
     
     adder = DBModelAdder()

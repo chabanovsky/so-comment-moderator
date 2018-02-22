@@ -1,5 +1,7 @@
 import sys
 import os
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib'))

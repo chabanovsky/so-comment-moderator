@@ -20,9 +20,10 @@ body {
     margin: 0px auto;
 }
 
+
 #header,
 #content {
-    width: 700px;
+    width: 800px;
     margin: 0px auto;
 }
 
@@ -71,6 +72,10 @@ body {
     margin-bottom: 10px;
     height: 40px;
     border-bottom: 1px solid #e4e6e8;
+}
+
+p a {
+    text-decoration: underline;
 }
 
 .button {
@@ -262,4 +267,8 @@ body {
 .chat-log th {
     overflow: scroll;
     word-break: break-all;
+}
+
+.wait{
+    margin: 0px auto;
 }
