@@ -16,8 +16,12 @@ def make_db_session(engine):
 def make_db_engine():
     return create_engine(app.config['SQLALCHEMY_DATABASE_URI'], convert_unicode=True)
 
+def clear_after_resp():
+    global engine
+    engine.dispose()
+
 LANGUAGE = "ru"
-APP_URL = "http://benice.rudevs.ru"
+APP_URL = "http://commentmod.ru" # "http://benice.rudevs.ru"
 DB_NAME = "comment_moderator"
 FEED_APP_TITLE = u"Модератор комментариев"
 SO_URL = "https://%sstackoverflow.com" % (str(LANGUAGE + ".") if LANGUAGE != "en" else "")

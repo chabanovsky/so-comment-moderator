@@ -1,0 +1,84 @@
+{% extends "base.html" %} 
+{% block js_ext %}
+{% if g.user and (g.user.role == "moderator" or g.user.role == "employe") %}
+<script type="text/javascript" async="" src="/m/scripts/review_tools.js"></script>
+{% endif %}
+{% endblock %} 
+{% block title %}Модератор комментариев{% endblock %} 
+{% block content %}
+<div>
+    <div class="main-menu">
+        <div id="tabs">
+            <a {% if "index" in active_tab %}class="active" {% endif %} href="{{ url_for('index') }}">Главная</a>
+            {% if g.user %}
+                <a {% if "features" in active_tab %}class="active" {% endif %} href="{{ url_for('features') }}">Признаки</a>
+                {% if g.user.role == "moderator" or g.user.role == "employe" %}
+                    <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Комментарии</a>
+                {% endif%}
+            {% endif %}
+        </div>
+    </div>
+
+{% if 'index' == active_tab %}
+    {% if not g.user %}
+    <p>
+        Здравствуйте! <br/><br/>
+        Для работы с этим сайтом вам необходимо <a href="{{ url_for('start_oauth') }}">авторизоваться</a>. Если вы участник Stack Overflow на русском, у вас будет возможность 
+        посмотреть имеющиеся признаки и как они разделяют комментарии. Пожалуйста, напишите мне в чате, если у вас появятся любые замечания или предложения 
+        по улучшению программы.
+
+        В дополнение, модераторы сообщества могут принять участие в дополнительном обучении классификатора.
+    </p>
+    <p>
+        <a href="{{ url_for('start_oauth') }}">Войти »</a>
+    </p>
+    {% endif %}
+    <p>
+        Одна из важных особенностей Stack Overflow — высокий коэффициент соотношения «Сигнал/Шум». 
+        Это означает, что на сайте содержится только полезная тематическая информация. Как бы мы не старались шум проникает на сайт, 
+        особенно с новыми участниками, которые либо не до конца понимают миссию сайта, либо не знают про нее. 
+        Задача сообщества — обучать новых участников правилам сайта и общепринятым подходам. 
+        <br/><br/>
+        Модератор комментариев призван помочь найти такие ситуации, когда что–то [уже] пошло не так: 
+        либо автор вопроса, потенциально нарушивший правила сайта, негативно реагирует на рекомендации более опытных участников, 
+        либо сами опытные участники, не выдержав, высказывают в грубой форме свое негодование. 
+        <br/><br/>
+        Мы — люди, эмоции неотъемлемая часть нашей природы. Правда, это не отменяет наше желание уменьшить шум, увеличив, по возможности, полезный сигнал.
+        <br/><br/>
+        Этот сайт нужен для аналитики и настройки «модератора». Результат работы программы доступны в реальном времени в чате: <a target="_blank" href="https://chat.stackexchange.com/rooms/73258/">https://chat.stackexchange.com/rooms/73258/</a>.
+    </p>
+{% elif "verifying" == active_tab %}
+    {% for item in paginator.items %}
+    <p>
+        <div class="statement-box">
+            <div class="statement">
+                {{ item.body|safe }}
+            </div>
+            <div class="statement-info">
+                <span>{{ item.creation_date.strftime('%H%:%M  %d.%m') }}</span>
+                <span> | </span>
+                <span class="channel-name"><a target="_blank" href="{{ so_url }}/u/{{ item.author_id }}">@{{ item.author_name }}</a></span>
+                <span> | </span>
+                <span class="channel-title">{{ item.title|safe }}</span>
+            </div>
+            <div class="statement-actions">
+                <a class="button" target="_blank" href="{{ so_url }}{% if item.answer_id > 0 %}/a/{{ item.answer_id }}{% else %}/q/{{ item.question_id }}{% endif %}#comment-{{ item.comment_id }}">Перейти к комментарию</a>
+                <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=False">Не грубый</a>
+                <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=True">Да, грубовато</a>
+            </div>
+        </div>
+    </p>
+    {% endfor %}
+{% elif  "features" == active_tab  %}
+    <div>
+        <div id="manual-feutures" style="height: 570px; width: 100%;"></div>
+    </div>
+{% endif %}    
+
+</div>
+
+{% if "verifying" == active_tab %}    
+{% include 'paginator.html' %} 
+{% endif %}
+
+{% endblock %}

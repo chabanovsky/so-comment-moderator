@@ -18,16 +18,28 @@ from sqlalchemy import and_, desc
 from sqlalchemy.sql import func
 from flask.ext.sqlalchemy import Pagination
 
-from meta import app as application, db, db_session, engine, FEED_APP_TITLE, APP_URL, SO_URL
+from meta import app as application, db, db_session, engine, FEED_APP_TITLE, APP_URL, SO_URL, clear_after_resp
 
-from db_models import SiteComment
+from db_models import SiteComment, User
 from api import *
+from oauth import *
+
+@application.before_request
+def before_request():
+    g.user = None
+    if 'account_id' in session:
+        g.user = User.get_by_account_id(int(session['account_id']))
+        
+@application.after_request
+def after_request(response):
+    clear_after_resp()
+    return response    
 
 @application.route("/", endpoint="index")
 @application.route("/index", endpoint="index")
 @application.route("/index.html", endpoint="index")
 def index():
-    return redirect(url_for('comment_feed'))  
+    return render_template('index.html', active_tab="index")  
 
 @application.route("/comments", endpoint="comments")
 @application.route("/comments/", endpoint="comments")
@@ -49,4 +61,54 @@ def comment_feed():
 @application.route("/features", endpoint="features")
 @application.route("/features/", endpoint="features")
 def features():
-    return render_template('features.html')
+    if g.user is None:
+        return redirect(url_for('index'))  
+    return render_template('features.html', active_tab="features")
+
+@application.route("/verifying", endpoint="verifying")
+@application.route("/verifying/", endpoint="verifying")
+def verifying():
+    if g.user is None or g.user.role != "moderator":
+        return redirect(url_for('index'))  
+    page = max(int(request.args.get("page", 1)), 1)
+    paginator = SiteComment.paginate_unverified(page)
+    return render_template('index.html', paginator=paginator, base_url=url_for("verifying"), so_url=SO_URL, active_tab="verifying")
+
+
+@application.route("/actions/actions_verify/<comment_id>", endpoint="actions_verify")
+@application.route("/actions/actions_verify/<comment_id>/", endpoint="actions_verify")
+def actions_verify(comment_id):
+    if g.user is None or g.user.role != "moderator":
+        logging.error("User is not authorised")
+        abort(404)
+
+    if request.args.get("is_rude", None) is None:
+        logging.error("is_rude is None")
+        abort(404)
+
+    is_rude = bool(request.args.get("is_rude"))
+
+    comment = SiteComment.by_comment_id(comment_id)
+    if comment is None:
+        logging.error("Comment not found")
+        abort(404)
+    
+    adder = DBModelAdder()
+    adder.start()
+
+    comment.is_verified = True
+    comment.is_rude = is_rude
+    comment.verified_user_id = g.user.user_id
+
+    adder.add(comment)
+    adder.done()
+
+    resp = {
+        "status": True,
+        "msg": "OK",
+        "comment_id": comment_id,
+        "is_rude": is_rude,
+        "is_verified": g.user.user_id
+    }    
+
+    return jsonify(**resp)

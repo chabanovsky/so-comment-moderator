@@ -9,6 +9,7 @@ from sqlalchemy import Column, BigInteger, Integer, String, DateTime, Boolean, F
 from sqlalchemy import and_, or_, desc, asc, bindparam, text, Interval
 from sqlalchemy.sql import func, select, update, literal_column, column, join
 from sqlalchemy.dialects.postgresql import aggregate_order_by
+from flask.ext.sqlalchemy import Pagination
 
 from meta import app as application, db, db_session
 from utils import process_text
@@ -103,6 +104,14 @@ class SiteComment(db.Model):
         return '<%s %r>' % (SiteComment.__tablename__, str(self.id))
 
     @staticmethod
+    def by_comment_id(comment_id):
+        session = db_session()
+        query = session.query(SiteComment).filter_by(comment_id=comment_id)
+        result = query.first()
+        session.close()
+        return result
+
+    @staticmethod
     def last_comment():
         session = db_session()
         query = session.query(SiteComment).order_by(desc(SiteComment.creation_date))
@@ -154,6 +163,24 @@ class SiteComment(db.Model):
         session.close()
         return result    
 
+    @staticmethod
+    def paginate_helper(query, page_num, per_page):
+        total = query.count()
+        items = query.offset((page_num-1)*per_page).limit(per_page).all()
+        p = Pagination(query, page_num, per_page, total, items)
+        return p
+    
+    @staticmethod
+    def paginate_unverified(page_num, per_page=15):
+        session = db_session()
+        query = session.query(SiteComment).\
+            filter(SiteComment.analysed!=None).\
+            filter(SiteComment.is_verified==False).\
+            filter(SiteComment.looks_rude==True).\
+            order_by(desc(SiteComment.creation_date))
+        p = SiteComment.paginate_helper(query, page_num, per_page)
+        session.close()
+        return p       
 
 class JSONObjectData(db.Model):
     __tablename__ = 'json_object_data'
@@ -174,6 +201,50 @@ class JSONObjectData(db.Model):
     def last(type_id):
         session = db_session()
         query = session.query(JSONObjectData).filter(JSONObjectData.type_id==type_id).order_by(desc(JSONObjectData.added))
+        result = query.first()
+        session.close()
+        return result    
+
+
+class User(db.Model):
+    __tablename__ = 'user'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    account_id  = db.Column(db.Integer, unique=True)
+    user_id     = db.Column(db.Integer)
+    username    = db.Column(db.String)
+    role        = db.Column(db.String)
+    is_banned   = db.Column(db.Boolean)
+    end_ban_date= db.Column(db.DateTime, nullable=True)
+    reputation  = db.Column(db.Integer)
+    profile_image   = db.Column(db.String)
+    profile_link= db.Column(db.String)
+
+    def __init__(self, account_id, 
+            user_id, 
+            username, 
+            reputation, 
+            profile_image, 
+            profile_link, 
+            role="user", 
+            is_banned=False):
+        self.account_id = account_id
+        self.user_id = user_id
+        self.username = username
+        self.reputation = reputation
+        self.profile_image = profile_image
+        self.profile_link = profile_link
+        self.role = role
+        self.is_banned = is_banned
+
+    def __repr__(self):
+        return '<User %r>' % str(self.id)
+
+
+    @staticmethod
+    def get_by_account_id(account_id):
+        session = db_session()
+        query = session.query(User).filter(User.account_id==account_id)
         result = query.first()
         session.close()
         return result    
