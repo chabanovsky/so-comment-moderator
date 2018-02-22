@@ -1,5 +1,5 @@
 FEATURE_ENPOINT = "/api/features";
-SCORE_FEATURE
+SCORE_FEATURE = 3;
 
 $(document).ready(function() {
     loadHelper(FEATURE_ENPOINT + "?x=3&y=4",
