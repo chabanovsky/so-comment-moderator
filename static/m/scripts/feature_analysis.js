@@ -1,8 +1,13 @@
-FEATURE_ENPOINT = "/api/features";
-QA_FEATURE              = 2;
-SCORE_FEATURE           = 3;
-RUDE_WORD_FEATURE       = 4;
-SEND_TO_SEARCH_FEATURE  = 5;
+var FEATURE_ENPOINT = "/api/features";
+var QA_FEATURE              = 2;
+var SCORE_FEATURE           = 3;
+var RUDE_WORD_FEATURE       = 4;
+var SEND_TO_SEARCH_FEATURE  = 5;
+
+var waitingDiv = '<div class="wait">Информация загружается...</div>';
+var scoreContainerId = "score-feuture";
+var rudeWordContainerId = "rude_words-feuture";
+var linkToSEContainerId = "link-to-se-feuture";
 
 function group_by_count(data){
     var dictionary = {};
@@ -26,58 +31,83 @@ function group_by_count(data){
 }
 
 $(document).ready(function() {
-    loadHelper(FEATURE_ENPOINT + "?x=" + SCORE_FEATURE.toString(),
-        function(data){
-            drawFeature(
-                "score-feuture",
-                "Рейтинг сообщения",
-                data.x_name,
-                "Количество",
-                group_by_count(data.positive),
-                group_by_count(data.negative),
-                "Оскорбление",
-                "Обычный комментарий" 
-            )
-        },
-        function(){
-            alert("Could not load feature data.")
-        }
-    )
+    $("#" + scoreContainerId + " a").click(function(event){
+        event.preventDefault();
+        var old_value = $("#" + scoreContainerId).html()
+        $("#" + scoreContainerId).html(waitingDiv)
 
-    loadHelper(FEATURE_ENPOINT + "?x=" + RUDE_WORD_FEATURE.toString(),
-        function(data){
-            drawFeature(
-                "rude_words-feuture",
-                "Кол-во грубых слов",
-                data.x_name,
-                "Количество",
-                group_by_count(data.positive),
-                group_by_count(data.negative),
-                "Оскорбление",
-                "Обычный комментарий" 
-            )
-        },
-        function(){
-            alert("Could not load feature data.")
-        }
-    )
-    loadHelper(FEATURE_ENPOINT + "?x=" + SEND_TO_SEARCH_FEATURE.toString(),
-        function(data){
-            drawFeature(
-                "link-to-se-feuture",
-                "Отправка в поиск",
-                data.x_name,
-                "Количество",
-                group_by_count(data.positive),
-                group_by_count(data.negative),
-                "Оскорбление",
-                "Обычный комментарий" 
-            )
-        },
-        function(){
-            alert("Could not load feature data.")
-        }
-    )
+        loadHelper(FEATURE_ENPOINT + "?x=" + SCORE_FEATURE.toString(),
+            function(data){
+                $("#" + scoreContainerId).css("height", "400px");
+                drawFeature(
+                    scoreContainerId,
+                    "Рейтинг сообщения",
+                    data.x_name,
+                    "Количество",
+                    group_by_count(data.positive),
+                    group_by_count(data.negative),
+                    "Оскорбление",
+                    "Обычный комментарий" 
+                )
+            },
+            function(){
+                alert("Could not load feature data.")
+                $("#" + scoreContainerId).html(old_value)
+            }
+        )
+    });
+
+    $("#" + rudeWordContainerId + " a").click(function(event){
+        event.preventDefault();
+        var old_value = $("#" + rudeWordContainerId).html()
+        $("#" + rudeWordContainerId).html(waitingDiv)
+
+        loadHelper(FEATURE_ENPOINT + "?x=" + RUDE_WORD_FEATURE.toString(),
+            function(data){
+                $("#" + rudeWordContainerId).css("height", "400px");
+                drawFeature(
+                    rudeWordContainerId,
+                    "Кол-во грубых слов",
+                    data.x_name,
+                    "Количество",
+                    group_by_count(data.positive),
+                    group_by_count(data.negative),
+                    "Оскорбление",
+                    "Обычный комментарий" 
+                )
+            },
+            function(){
+                alert("Could not load feature data.")
+                $("#" + rudeWordContainerId).html(old_value)
+            }
+        )
+    });
+    
+    $("#" + linkToSEContainerId + " a").click(function(event){    
+        event.preventDefault();
+        var old_value = $("#" + linkToSEContainerId).html()
+        $("#" + linkToSEContainerId).html(waitingDiv)
+
+        loadHelper(FEATURE_ENPOINT + "?x=" + SEND_TO_SEARCH_FEATURE.toString(),
+            function(data){
+                $("#" + linkToSEContainerId).css("height", "400px");
+                drawFeature(
+                    linkToSEContainerId,
+                    "Отправка в поиск",
+                    data.x_name,
+                    "Количество",
+                    group_by_count(data.positive),
+                    group_by_count(data.negative),
+                    "Оскорбление",
+                    "Обычный комментарий" 
+                )
+            },
+            function(){
+                alert("Could not load feature data.")
+                $("#" + linkToSEContainerId).html(old_value)
+            }
+        )
+    });
 });
 
 function drawFeature(container, title, x_name, y_name, positive_class_data, negative_class_data, positive_class_name, negative_class_name){
