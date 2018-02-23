@@ -13,7 +13,7 @@ from logistic_regression import LogisticRegaression
 from features import SiteCommentFeatures
 from feature_list import SiteCommentFeatureList
 
-from meta import MODEL_LOGISITIC_REGRESSION, MODEL_NAIVE_BAYES, CURRENT_MODEL
+from meta import MODEL_LOGISITIC_REGRESSION, MODEL_NAIVE_BAYES, CURRENT_MODEL, REBUILD_MODEL_THRESHOLD
 
 def load_comments_from_se_to_db():
     def make_site_comment_params(comment, info):
@@ -32,7 +32,7 @@ def load_comments_from_se_to_db():
             "creation_date": creation_date,
             "author_id": author_id,
             "author_name": author_name,
-            "is_verified": False,
+            "verified": None,
             "is_rude": False,
             "diff_with_post": (creation_date - post_creation_date).total_seconds()
         }
@@ -59,6 +59,27 @@ def load_comments_from_se_to_db():
         adder.add(SiteComment(make_site_comment_params(comment, infos.get(comment[1]))))
 
     adder.done()
+
+def check_to_rebuild():
+    saved_data = JSONObjectData.last(JSONObjectData.LOGREG_TYPE_ID)
+    feature_saved_data = JSONObjectData.last(JSONObjectData.FEATURE_TYPE_ID)
+    if saved_data is None or feature_saved_data is None:
+        print("There are no saved data. Starting rebuilding...")
+        create_model()
+        print("Now, do analysis for previous comments with the new model...")
+        analyse_comments(datetime.datetime.now())
+        return 
+
+    unseen_for_model = SiteComment.verified_after(saved_data.added)
+    print("There are currently %s comments which the model has not seen. The threshold is %s" % ( str(unseen_for_model), str(REBUILD_MODEL_THRESHOLD) ))
+    if unseen_for_model >= REBUILD_MODEL_THRESHOLD:
+        print("We are above the threshold. Starting rebuilding...")
+        create_model()
+        print("Now, do analysis for previous comments with the new model...")
+        analyse_comments(datetime.datetime.now())
+        return 
+
+    print("No reason to rebuild. We will wait a bit more.")
 
 def create_model():
     if CURRENT_MODEL == MODEL_LOGISITIC_REGRESSION:
@@ -93,7 +114,7 @@ def create_model():
     else:
         print("Please specify a model to create first.")
 
-def analyse_comments():
+def analyse_comments(analysed_at=None):
     classifier = None
         
     if CURRENT_MODEL == MODEL_LOGISITIC_REGRESSION:
@@ -107,7 +128,7 @@ def analyse_comments():
     suspected = 0
     adder = DBModelAdder()
     adder.start()
-    comments_for_analysis = SiteComment.comments_for_analysis()
+    comments_for_analysis = SiteComment.comments_for_analysis(analysed_at)
     for comment in comments_for_analysis:
         comment.analysed = datetime.datetime.now()
         comment.looks_rude = classifier.classify_rude(comment)

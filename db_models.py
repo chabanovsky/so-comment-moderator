@@ -68,7 +68,7 @@ class SiteComment(db.Model):
     author_name = Column(String)
     diff_with_post= Column(BigInteger)
 
-    is_verified = Column(Boolean, default=False)
+    verified    = Column(DateTime, default=None)
     is_rude     = Column(Boolean, default=False)
     verified_user_id= Column(BigInteger)
 
@@ -91,7 +91,7 @@ class SiteComment(db.Model):
         self.author_id  = params.get('author_id')
         self.author_name= params.get('author_name')
 
-        self.is_verified= params.get('is_verified', False)
+        self.verified   = params.get('verified', None)
         self.is_rude    = params.get('is_rude', False)
         self.verified_user = params.get('verified_user', -1)
         
@@ -126,7 +126,7 @@ class SiteComment(db.Model):
     @staticmethod
     def rude_comments():
         session = db_session()
-        query = session.query(SiteComment).filter_by(is_rude=True).filter_by(is_verified=True).order_by(desc(SiteComment.creation_date))
+        query = session.query(SiteComment).filter(SiteComment.is_rude==True).filter(SiteComment.verified!=None).order_by(desc(SiteComment.creation_date))
         result = query.all()
         session.close()
         return result    
@@ -134,15 +134,20 @@ class SiteComment(db.Model):
     @staticmethod
     def normal_comments():  
         session = db_session()
-        query = session.query(SiteComment).filter_by(is_rude=False).filter_by(is_verified=True).order_by(desc(SiteComment.creation_date))
+        query = session.query(SiteComment).filter(SiteComment.is_rude==False).filter(SiteComment.verified!=None).order_by(desc(SiteComment.creation_date))
         result = query.all()
         session.close()
         return result    
 
     @staticmethod
-    def comments_for_analysis():
+    def comments_for_analysis(analysed_at=None):
         session = db_session()
-        query = session.query(SiteComment).filter(SiteComment.is_verified==False).filter(SiteComment.analysed==None).order_by(desc(SiteComment.creation_date))
+        query = session.query(SiteComment).filter(SiteComment.verified==None)
+        if analysed_at is None:
+            query = query.filter(SiteComment.analysed==None)
+        else:
+            query = query.filter(or_(SiteComment.analysed==None, SiteComment.analysed<analysed_at))
+        query = query.order_by(desc(SiteComment.creation_date))
         result = query.all()
         session.close()
         return result    
@@ -150,7 +155,7 @@ class SiteComment(db.Model):
     @staticmethod
     def to_verify(start=0, limit=30):
         session = db_session()
-        query = session.query(SiteComment).filter_by(is_verified=False).filter_by(looks_rude=True).order_by(desc(SiteComment.creation_date)).limit(limit)
+        query = session.query(SiteComment).filter(SiteComment.verified==None).filter(SiteComment.looks_rude==True).order_by(desc(SiteComment.creation_date)).limit(limit)
         result = query.all()
         session.close()
         return result    
@@ -175,12 +180,19 @@ class SiteComment(db.Model):
         session = db_session()
         query = session.query(SiteComment).\
             filter(SiteComment.analysed!=None).\
-            filter(SiteComment.is_verified==False).\
+            filter(SiteComment.verified==None).\
             filter(SiteComment.looks_rude==True).\
             order_by(desc(SiteComment.creation_date))
         p = SiteComment.paginate_helper(query, page_num, per_page)
         session.close()
-        return p       
+        return p    
+
+    @staticmethod
+    def verified_after(date):
+        session = db_session()
+        result = session.query(func.count(SiteComment.id)).filter(SiteComment.verified>date).scalar()
+        session.close()
+        return result    
 
 class JSONObjectData(db.Model):
     __tablename__ = 'json_object_data'

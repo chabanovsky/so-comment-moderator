@@ -21,8 +21,7 @@ def api_features():
         abort(404)
 
     x = int(request.args.get("x", -1))
-    y = int(request.args.get("y", -1))
-    if x < 0 and y < 0:
+    if x < 0:
         abort(404)
     
     if CURRENT_MODEL != MODEL_LOGISITIC_REGRESSION:
@@ -42,7 +41,6 @@ def api_features():
             feature = feature_maker.feature(comment)
             data.append({
                 "x": feature_maker.manual_feature_value(feature, x),
-                "y": feature_maker.manual_feature_value(feature, y),
                 "label": label
             })
         return data
@@ -52,7 +50,6 @@ def api_features():
     
     return jsonify(**{
         "x_name": SiteCommentFeatures.feature_desc(x),
-        "y_name": SiteCommentFeatures.feature_desc(y),
         "positive": positive_data,
         "negative": negative_data 
     })

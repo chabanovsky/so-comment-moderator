@@ -1,16 +1,75 @@
 FEATURE_ENPOINT = "/api/features";
-SCORE_FEATURE = 3;
+QA_FEATURE              = 2;
+SCORE_FEATURE           = 3;
+RUDE_WORD_FEATURE       = 4;
+SEND_TO_SEARCH_FEATURE  = 5;
+
+function group_by_count(data){
+    var dictionary = {};
+    for (var index = 0; index < data.length; index++) {
+        item = data[index]
+        if (item.x in dictionary) {
+            dictionary[item.x] += 1
+        } else {
+            dictionary[item.x] = 1
+        }
+    }
+    new_data = []
+    for(key in dictionary){
+        var value = dictionary[key];
+        new_data.push({
+            "x": parseInt(key),
+            "y": value
+        })
+    }
+    return new_data
+}
 
 $(document).ready(function() {
-    loadHelper(FEATURE_ENPOINT + "?x=3&y=4",
+    loadHelper(FEATURE_ENPOINT + "?x=" + SCORE_FEATURE.toString(),
         function(data){
             drawFeature(
-                "manual-feutures",
-                "Рейтинг сообщения к количеству грубых слов в комментарии",
+                "score-feuture",
+                "Рейтинг сообщения",
                 data.x_name,
-                data.y_name,
-                data.positive,
-                data.negative,
+                "Количество",
+                group_by_count(data.positive),
+                group_by_count(data.negative),
+                "Оскорбление",
+                "Обычный комментарий" 
+            )
+        },
+        function(){
+            alert("Could not load feature data.")
+        }
+    )
+
+    loadHelper(FEATURE_ENPOINT + "?x=" + RUDE_WORD_FEATURE.toString(),
+        function(data){
+            drawFeature(
+                "rude_words-feuture",
+                "Кол-во грубых слов",
+                data.x_name,
+                "Количество",
+                group_by_count(data.positive),
+                group_by_count(data.negative),
+                "Оскорбление",
+                "Обычный комментарий" 
+            )
+        },
+        function(){
+            alert("Could not load feature data.")
+        }
+    )
+    loadHelper(FEATURE_ENPOINT + "?x=" + SEND_TO_SEARCH_FEATURE.toString(),
+        function(data){
+            drawFeature(
+                "link-to-se-feuture",
+                "Отправка в поиск",
+                data.x_name,
+                "Количество",
+                group_by_count(data.positive),
+                group_by_count(data.negative),
                 "Оскорбление",
                 "Обычный комментарий" 
             )

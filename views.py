@@ -93,7 +93,7 @@ def actions_verify(comment_id):
     adder = DBModelAdder()
     adder.start()
 
-    comment.is_verified = True
+    comment.verified = datetime.datetime.now()
     comment.is_rude = is_rude
     comment.verified_user_id = g.user.user_id
 
@@ -105,7 +105,12 @@ def actions_verify(comment_id):
         "msg": "OK",
         "comment_id": comment_id,
         "is_rude": is_rude,
-        "is_verified": g.user.user_id
+        "verified_user_id": g.user.user_id
     }    
 
     return jsonify(**resp)
+
+@application.route("/actions/actions_skipp/<comment_id>", endpoint="actions_skipp")
+@application.route("/actions/actions_skipp/<comment_id>/", endpoint="actions_skipp")
+def actions_skipp(comment_id):
+    pass

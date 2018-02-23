@@ -1,7 +1,12 @@
 import sys
 import os
-reload(sys)
-sys.setdefaultencoding('utf-8')
+
+p3_version = (3,0)
+cur_version = sys.version_info
+
+if cur_version < p3_version:
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib'))
@@ -10,7 +15,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
 
 from csv_data_uploader import CSVDataUploader
 from database import init_db
-from tasks import load_comments_from_se_to_db, analyse_comments, create_model
+from tasks import load_comments_from_se_to_db, analyse_comments, create_model, check_to_rebuild
 
 from meta import *
 from views import *
@@ -37,6 +42,10 @@ if __name__ == "__main__":
 
         if str(sys.argv[1]) == "--create-model":
             create_model() 
+            sys.exit() 
+
+        if str(sys.argv[1]) == "--check-to-rebuild":
+            check_to_rebuild() 
             sys.exit() 
 
         print("Wrong parameters. Check the spelling.")

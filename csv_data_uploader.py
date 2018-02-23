@@ -19,24 +19,24 @@ class CSVDataUploader:
         adder = DBModelAdder()
         adder.start()
 
-        def add_to_db(adder, comments, is_verified, verified_user, is_rude):
+        def add_to_db(adder, comments, verified, verified_user, is_rude):
             for parsed_args in comments:
-                params = CSVDataUploader.make_site_comment_params(parsed_args, is_verified, verified_user, is_rude)
+                params = CSVDataUploader.make_site_comment_params(parsed_args, verified, verified_user, is_rude)
                 if SiteComment.is_exist(adder, params.get('comment_id')):
                     continue
 
                 adder.add(SiteComment(params))
 
         rude_cmnts = self.read_comments('rude_comments.csv')
-        add_to_db(adder, rude_cmnts, True, VERIFIED_USER_ID_BY_DEFAULT, True)
+        add_to_db(adder, rude_cmnts, datetime.now(), VERIFIED_USER_ID_BY_DEFAULT, True)
 
         normal_cmnts = self.read_comments('normal_comments.csv')
-        add_to_db(adder, normal_cmnts, True, VERIFIED_USER_ID_BY_DEFAULT, False)
+        add_to_db(adder, normal_cmnts, datetime.now(), VERIFIED_USER_ID_BY_DEFAULT, False)
 
         adder.done()
 
     @staticmethod
-    def make_site_comment_params(parsed_args, is_verified, verified_user, is_rude):
+    def make_site_comment_params(parsed_args, verified, verified_user, is_rude):
         comment_id, body, post_id, post_title, score, parent_post_id, creation_date, author_id, author_username, post_author_id, diff_with_post = parsed_args
         question_id = -1
         answer_id = -1
@@ -58,7 +58,7 @@ class CSVDataUploader:
             'creation_date': creation_date,
             'author_id': author_id,
             'author_name': author_username,
-            'is_verified': is_verified,
+            'verified': verified,
             'verified_user': verified_user,
             'is_rude': is_rude,
             'diff_with_post': diff_with_post

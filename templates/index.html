@@ -17,7 +17,7 @@
             {% if g.user %}
                 <a {% if "features" in active_tab %}class="active" {% endif %} href="{{ url_for('features') }}">Признаки</a>
                 {% if g.user.role == "moderator" or g.user.role == "employe" %}
-                    <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Комментарии</a>
+                    <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Комментарии для проверки</a>
                 {% endif%}
             {% endif %}
         </div>
@@ -52,30 +52,45 @@
         Этот сайт нужен для аналитики и настройки «модератора». Результат работы программы доступны в реальном времени в чате: <a target="_blank" href="https://chat.stackexchange.com/rooms/73258/">https://chat.stackexchange.com/rooms/73258/</a>.
     </p>
 {% elif "verifying" == active_tab %}
-    {% for item in paginator.items %}
+    {% if paginator.items|length == 0 %}
     <p>
-        <div class="statement-box">
-            <div class="statement">
-                {{ item.body|safe }}
-            </div>
-            <div class="statement-info">
-                <span>{{ item.creation_date.strftime('%H%:%M  %d.%m') }}</span>
-                <span> | </span>
-                <span class="channel-name"><a target="_blank" href="{{ so_url }}/u/{{ item.author_id }}">@{{ item.author_name }}</a></span>
-                <span> | </span>
-                <span class="channel-title">{{ item.title|safe }}</span>
-            </div>
-            <div class="statement-actions">
-                <a class="button" target="_blank" href="{{ so_url }}{% if item.answer_id > 0 %}/a/{{ item.answer_id }}{% else %}/q/{{ item.question_id }}{% endif %}#comment-{{ item.comment_id }}">Перейти к комментарию</a>
-                <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=False">Не грубый</a>
-                <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=True">Да, грубовато</a>
-            </div>
-        </div>
+        <div>Ничего нет.</div>
     </p>
-    {% endfor %}
+    {% else %}
+        {% for item in paginator.items %}
+        <p>
+            <div class="statement-box">
+                <div class="statement">
+                    {{ item.body|safe }}
+                </div>
+                <div class="statement-info">
+                    <span>{{ item.creation_date.strftime('%H%:%M  %d.%m') }}</span>
+                    <span> | </span>
+                    <span class="channel-name"><a target="_blank" href="{{ so_url }}/u/{{ item.author_id }}">@{{ item.author_name }}</a></span>
+                    <span> | </span>
+                    <span class="channel-title">{{ item.title|safe }}</span>
+                </div>
+                <div class="statement-actions">
+                    <a class="button" target="_blank" href="{{ so_url }}{% if item.answer_id > 0 %}/a/{{ item.answer_id }}{% else %}/q/{{ item.question_id }}{% endif %}#comment-{{ item.comment_id }}">Перейти к комментарию</a>
+                    <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=True">Не соответствует правилам SO</a>
+                    <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=False">Отметить как «обычный»</a>
+                    <a class="verify button" href="{{ url_for('actions_skipp', comment_id=item.comment_id) }}">Не учитывать в обучении модели</a>
+                </div>
+            </div>
+        </p>
+        {% endfor %}
+    {% endif %}
 {% elif  "features" == active_tab  %}
     <div>
-        <div id="manual-feutures" style="height: 570px; width: 100%;"><div class="wait">Информация загружается...</div></div>
+        <p>
+            <div id="score-feuture" style="height: 570px; width: 100%;"><div class="wait">Информация загружается...</div></div>
+        </p>
+        <p>
+            <div id="rude_words-feuture" style="height: 570px; width: 100%;"><div class="wait">Информация загружается...</div></div>
+        </p>
+        <p>
+            <div id="link-to-se-feuture" style="height: 570px; width: 100%;"><div class="wait">Информация загружается...</div></div>
+        </p>
     </div>
 {% endif %}    
 
