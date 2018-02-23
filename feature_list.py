@@ -4,7 +4,7 @@ import numpy as np
 from features import SiteCommentFeatures
 
 class SiteCommentFeatureList:
-    def __init__(self, rude_comments, normal_comments, k=0.8):
+    def __init__(self, rude_comments, normal_comments, k=0.9):
         self.rude_border = int(k * len(rude_comments))
         self.normal_border = int(k * len(normal_comments))
         self.rude_train, self.rude_test = rude_comments[:self.rude_border], rude_comments[self.rude_border:]
