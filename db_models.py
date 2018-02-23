@@ -75,6 +75,7 @@ class SiteComment(db.Model):
     added       = Column(DateTime, default=datetime.datetime.now)
     analysed    = Column(DateTime, default=None)
     looks_rude  = Column(Boolean, default=False)
+    skipped     = Column(DateTime, default=None)
 
     def __init__(self, params):
         self.comment_id = params.get('comment_id')
@@ -99,6 +100,7 @@ class SiteComment(db.Model):
         self.added      = datetime.datetime.now()
         self.analysed   = None
         self.looks_rude = False
+        self.skipped    = None
 
     def __repr__(self):
         return '<%s %r>' % (SiteComment.__tablename__, str(self.id))
@@ -126,7 +128,7 @@ class SiteComment(db.Model):
     @staticmethod
     def rude_comments():
         session = db_session()
-        query = session.query(SiteComment).filter(SiteComment.is_rude==True).filter(SiteComment.verified!=None).order_by(desc(SiteComment.creation_date))
+        query = session.query(SiteComment).filter(SiteComment.skipped==None).filter(SiteComment.is_rude==True).filter(SiteComment.verified!=None).order_by(desc(SiteComment.creation_date))
         result = query.all()
         session.close()
         return result    
@@ -134,15 +136,17 @@ class SiteComment(db.Model):
     @staticmethod
     def normal_comments():  
         session = db_session()
-        query = session.query(SiteComment).filter(SiteComment.is_rude==False).filter(SiteComment.verified!=None).order_by(desc(SiteComment.creation_date))
+        query = session.query(SiteComment).filter(SiteComment.skipped==None).filter(SiteComment.is_rude==False).filter(SiteComment.verified!=None).order_by(desc(SiteComment.creation_date))
         result = query.all()
         session.close()
         return result    
 
     @staticmethod
-    def comments_for_analysis(analysed_at=None):
+    def comments_for_analysis(analysed_at=None, include_skipped=False):
         session = db_session()
         query = session.query(SiteComment).filter(SiteComment.verified==None)
+        if not include_skipped:
+            query = query.filter(SiteComment.skipped==None)
         if analysed_at is None:
             query = query.filter(SiteComment.analysed==None)
         else:
@@ -150,15 +154,7 @@ class SiteComment(db.Model):
         query = query.order_by(desc(SiteComment.creation_date))
         result = query.all()
         session.close()
-        return result    
-
-    @staticmethod
-    def to_verify(start=0, limit=30):
-        session = db_session()
-        query = session.query(SiteComment).filter(SiteComment.verified==None).filter(SiteComment.looks_rude==True).order_by(desc(SiteComment.creation_date)).limit(limit)
-        result = query.all()
-        session.close()
-        return result    
+        return result      
 
     @staticmethod
     def analysed_as_rude(limit=30):
@@ -180,12 +176,36 @@ class SiteComment(db.Model):
         session = db_session()
         query = session.query(SiteComment).\
             filter(SiteComment.analysed!=None).\
-            filter(SiteComment.verified==None).\
             filter(SiteComment.looks_rude==True).\
+            filter(SiteComment.verified==None).\
+            filter(SiteComment.skipped==None).\
             order_by(desc(SiteComment.creation_date))
         p = SiteComment.paginate_helper(query, page_num, per_page)
         session.close()
+        return p 
+
+    @staticmethod
+    def paginate_verified(page_num, per_page=15):
+        session = db_session()
+        query = session.query(SiteComment).\
+            filter(SiteComment.analysed!=None).\
+            filter(SiteComment.verified!=None).\
+            filter(SiteComment.skipped==None).\
+            order_by(desc(SiteComment.verified))
+        p = SiteComment.paginate_helper(query, page_num, per_page)
+        session.close()
         return p    
+
+    @staticmethod
+    def paginate_skipped(page_num, per_page=15):
+        session = db_session()
+        query = session.query(SiteComment).\
+            filter(SiteComment.analysed!=None).\
+            filter(SiteComment.skipped!=None).\
+            order_by(desc(SiteComment.creation_date))
+        p = SiteComment.paginate_helper(query, page_num, per_page)
+        session.close()
+        return p 
 
     @staticmethod
     def verified_after(date):
@@ -202,12 +222,14 @@ class JSONObjectData(db.Model):
     id          = Column(Integer, primary_key=True)
     type_id     = Column(Integer)
     object_json = Column(String)
+    extra       = Column(String)
     added       = Column(DateTime, default=datetime.datetime.now)
 
-    def __init__(self, type_id, object_json):
+    def __init__(self, type_id, object_json, extra=""):
         self.type_id    = type_id
         self.object_json= object_json
         self.added      = datetime.datetime.now()
+        self.extra      = extra
 
     @staticmethod
     def last(type_id):

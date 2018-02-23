@@ -106,7 +106,18 @@ def create_model():
         adder.add(json_fd)
         
         classifier_data = classifier.store()
-        json_cd = JSONObjectData(JSONObjectData.LOGREG_TYPE_ID, json.dumps(classifier_data))
+        classifier_extra = {
+            "acc": acc,
+            "rude_right": rude_right,
+            "rude_total": rude_total,
+            "normal_right": normal_right,
+            "normal_total": normal_total
+        }
+        json_cd = JSONObjectData(
+            JSONObjectData.LOGREG_TYPE_ID, 
+            json.dumps(classifier_data), 
+            json.dumps(classifier_extra)
+        )
         adder.add(json_cd)
 
         adder.done()

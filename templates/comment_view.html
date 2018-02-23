@@ -1,0 +1,24 @@
+{% for item in paginator.items %}
+<p>
+    <div class="statement-box">
+        <div class="statement {% if 'verified' in active_tab %}{% if item.is_rude %}verified-rude{% endif %}{% endif %}">
+            {{ item.body|safe }}
+        </div>
+        <div class="statement-info">
+            <span>{{ item.creation_date.strftime('%H%:%M  %d.%m') }}</span>
+            <span> | </span>
+            <span class="channel-name"><a target="_blank" href="{{ so_url }}/u/{{ item.author_id }}">@{{ item.author_name }}</a></span>
+            <span> | </span>
+            <span class="channel-title">{{ item.title|safe }}</span>
+        </div>
+        <div class="statement-actions">
+            <a class="button" target="_blank" href="{{ so_url }}{% if item.answer_id > 0 %}/a/{{ item.answer_id }}{% else %}/q/{{ item.question_id }}{% endif %}#comment-{{ item.comment_id }}">Перейти к комментарию</a>
+            <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=True">Отметить как «Сомнительный»</a>
+            <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=False">Отметить как «Обычный»</a>
+            {% if "skipped" not in active_tab %}
+            <a class="verify button" href="{{ url_for('actions_skipp', comment_id=item.comment_id) }}">Не учитывать в обучении модели</a>
+            {% endif %}
+        </div>
+    </div>
+</p>
+{% endfor %}

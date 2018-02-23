@@ -74,6 +74,23 @@ def verifying():
     paginator = SiteComment.paginate_unverified(page)
     return render_template('index.html', paginator=paginator, base_url=url_for("verifying"), so_url=SO_URL, active_tab="verifying")
 
+@application.route("/verified", endpoint="verified")
+@application.route("/verified/", endpoint="verified")
+def verified():
+    if g.user is None or g.user.role != "moderator":
+        return redirect(url_for('index'))  
+    page = max(int(request.args.get("page", 1)), 1)
+    paginator = SiteComment.paginate_verified(page)
+    return render_template('index.html', paginator=paginator, base_url=url_for("verified"), so_url=SO_URL, active_tab="verified")
+
+@application.route("/skipped", endpoint="skipped")
+@application.route("/skipped/", endpoint="skipped")
+def skipped():
+    if g.user is None or g.user.role != "moderator":
+        return redirect(url_for('index'))  
+    page = max(int(request.args.get("page", 1)), 1)
+    paginator = SiteComment.paginate_skipped(page)
+    return render_template('index.html', paginator=paginator, base_url=url_for("skipped"), so_url=SO_URL, active_tab="skipped")
 
 @application.route("/actions/actions_verify/<comment_id>", endpoint="actions_verify")
 @application.route("/actions/actions_verify/<comment_id>/", endpoint="actions_verify")
@@ -84,7 +101,7 @@ def actions_verify(comment_id):
     if request.args.get("is_rude", None) is None:
         abort(404)
 
-    is_rude = bool(request.args.get("is_rude"))
+    is_rude = json.loads(request.args.get("is_rude").lower())
 
     comment = SiteComment.by_comment_id(comment_id)
     if comment is None:
@@ -96,6 +113,7 @@ def actions_verify(comment_id):
     comment.verified = datetime.datetime.now()
     comment.is_rude = is_rude
     comment.verified_user_id = g.user.user_id
+    comment.skipped = None
 
     adder.add(comment)
     adder.done()
@@ -113,4 +131,28 @@ def actions_verify(comment_id):
 @application.route("/actions/actions_skipp/<comment_id>", endpoint="actions_skipp")
 @application.route("/actions/actions_skipp/<comment_id>/", endpoint="actions_skipp")
 def actions_skipp(comment_id):
-    pass
+    if g.user is None or g.user.role != "moderator":
+        abort(404)
+
+    comment = SiteComment.by_comment_id(comment_id)
+    if comment is None:
+        abort(404)
+
+    adder = DBModelAdder()
+    adder.start()
+
+    comment.skipped = datetime.datetime.now()
+    comment.verified = None
+    comment.verified_user = -1
+
+    adder.add(comment)
+    adder.done()
+
+    resp = {
+        "status": True,
+        "msg": "OK",
+        "comment_id": comment_id
+    }    
+
+    return jsonify(**resp)
+        

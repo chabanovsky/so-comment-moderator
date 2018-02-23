@@ -244,6 +244,7 @@ p a {
     text-align: left
 }
 
+.statement-box .verified-rude, 
 .chat-log th.statements-message {
     background-color: #FFF8DC;
     border: 1px solid #E0DCBF;

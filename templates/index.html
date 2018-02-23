@@ -17,7 +17,9 @@
             {% if g.user %}
                 <a {% if "features" in active_tab %}class="active" {% endif %} href="{{ url_for('features') }}">Признаки</a>
                 {% if g.user.role == "moderator" or g.user.role == "employe" %}
-                    <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Комментарии для проверки</a>
+                    <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Для проверки</a>
+                    <a {% if "skipped" in active_tab %}class="active" {% endif %} href="{{ url_for('skipped') }}">Пропущенные</a>
+                    <a {% if "verified" in active_tab %}class="active" {% endif %} href="{{ url_for('verified') }}">Проверенные</a>
                 {% endif%}
             {% endif %}
         </div>
@@ -52,34 +54,33 @@
         Этот сайт нужен для аналитики и настройки «модератора». Результат работы программы доступны в реальном времени в чате: <a target="_blank" href="https://chat.stackexchange.com/rooms/73258/">https://chat.stackexchange.com/rooms/73258/</a>.
     </p>
 {% elif "verifying" == active_tab %}
+    <p>
+        Пожалуйста, помните, на этой странице вы создаете обучающую выборку для модели, а не модерируете сайт. 
+        Задача робо–модератора — выявить все потенциально опасные для сообщества социальные ситуации, которые повышают шум и снижают общность между людьми. 
+        К этому можно отнести: (1) оскорбления; (2) сарказм в негативной коннотации и насмешки; (3) отсылка к поисковикам; 
+        (4) резкие прилагательные (а–ля «жалкий», «дырявый», «идиотский», «отвратительный» и т. д.). 
+        Так же стоит отмечать комментарии–ссылки и прочие нарушающие базовые правила вещи. 
+        <br/><br/>
+        Ниже представленных комментарии, которые программа определила как подозрительные. 
+        Как вы можете видеть, комментарии далеко не всегда являются грубыми. Мы можем помочь нашему ассистенту, подсказав как переобучить модель.
+        Если вы видите обычный комментарий, который получил отметку «грубый», пожалуйста, отметьте комментарий «Обычный». 
+        Когда ассистент соберет N «ошибок», он автоматически вызовет создание новой модели.
+    </p>
     {% if paginator.items|length == 0 %}
     <p>
         <div>Ничего нет.</div>
     </p>
     {% else %}
-        {% for item in paginator.items %}
-        <p>
-            <div class="statement-box">
-                <div class="statement">
-                    {{ item.body|safe }}
-                </div>
-                <div class="statement-info">
-                    <span>{{ item.creation_date.strftime('%H%:%M  %d.%m') }}</span>
-                    <span> | </span>
-                    <span class="channel-name"><a target="_blank" href="{{ so_url }}/u/{{ item.author_id }}">@{{ item.author_name }}</a></span>
-                    <span> | </span>
-                    <span class="channel-title">{{ item.title|safe }}</span>
-                </div>
-                <div class="statement-actions">
-                    <a class="button" target="_blank" href="{{ so_url }}{% if item.answer_id > 0 %}/a/{{ item.answer_id }}{% else %}/q/{{ item.question_id }}{% endif %}#comment-{{ item.comment_id }}">Перейти к комментарию</a>
-                    <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=True">Не соответствует правилам SO</a>
-                    <a class="verify button" href="{{ url_for('actions_verify', comment_id=item.comment_id) }}?is_rude=False">Отметить как «обычный»</a>
-                    <a class="verify button" href="{{ url_for('actions_skipp', comment_id=item.comment_id) }}">Не учитывать в обучении модели</a>
-                </div>
-            </div>
-        </p>
-        {% endfor %}
+        {% include 'comment_view.html' %}  
     {% endif %}
+{% elif  "verified" == active_tab  %}
+    <p>
+        {% include 'comment_view.html' %}  
+    </p>
+{% elif  "skipped" == active_tab  %}
+    <p>
+        {% include 'comment_view.html' %}  
+    </p>    
 {% elif  "features" == active_tab  %}
     <div>
         <p>
@@ -96,7 +97,7 @@
 
 </div>
 
-{% if "verifying" == active_tab %}    
+{% if "verifying" == active_tab or "skipped" == active_tab or "verified" == active_tab %}    
 {% include 'paginator.html' %} 
 {% endif %}
 
