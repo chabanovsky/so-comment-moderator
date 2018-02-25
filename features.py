@@ -7,27 +7,37 @@ import numpy as np
 from operator import itemgetter
 from tfidf import DocsStats, Document
 from db_models import CommentStaticData
+from wiktionary_org import WiktionaryOrg
 
 class SiteCommentFeatures:
     RUDE_CLASS = 1
     NORMAL_CLASS = 0
 
-    POST_AUTHOR_ID_FEATURE      = 0 # 1. Post author id
-    COMMENT_AUTHOR_ID_FEATURE   = 1 # 2. Comment author id
-    QA_FEATURE                  = 2 # 3. Question (0) or answer (1)
-    POST_SCORE_FEATURE          = 3 # 4. Post score
-    RUDE_WORD_FEATURE           = 4
-    SEND_TO_SEARCH_FEATURE      = 5
-    WIKTIONARY_ORG_RUDE_WORD_FEATURE = 6
+    QA_FEATURE                  = 0 
+    POST_SCORE_FEATURE          = 1 
+    RUDE_WORD_FEATURE           = 2
+    SEND_TO_SEARCH_FEATURE      = 3    
+    WIKTIONARY_ORG_OBSCENE_WORD_FEATURE = 4
+    WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE = 5
+    WIKTIONARY_ORG_RUDE_WORD_FEATURE    = 6
+    WIKTIONARY_ORG_IRONY_WORD_FEATURE   = 7
+    WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE= 8
+    WIKTIONARY_ORG_NEGLECT_WORD_FEATURE = 9
+    WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE = 10
     
-    manual_feature_number = 7
+    manual_feature_number = 11
     feature_descs = {
-        POST_AUTHOR_ID_FEATURE: u"Автор родительского сообщения",
-        COMMENT_AUTHOR_ID_FEATURE: u"Автор комментария",
         QA_FEATURE: u"Вопрос или ответ",
         POST_SCORE_FEATURE: u"Рейтинг родительского сообщения",
         RUDE_WORD_FEATURE: u"Кол–во грубых слов",
-        SEND_TO_SEARCH_FEATURE: u"Отсылка к поиску"
+        SEND_TO_SEARCH_FEATURE: u"Отсылка к поиску",
+        WIKTIONARY_ORG_OBSCENE_WORD_FEATURE: u"Кол-во матерных слов",
+        WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE: u"Кол-во бранных слов",
+        WIKTIONARY_ORG_RUDE_WORD_FEATURE: u"Кол-во грубых слов",
+        WIKTIONARY_ORG_IRONY_WORD_FEATURE: u"Кол-во слов иронии",
+        WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE: u"Кол-во слов призрения",
+        WIKTIONARY_ORG_NEGLECT_WORD_FEATURE: u"Кол-во слов пренебрежения",
+        WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE: u"Кол-во слов унижения"
     }
 
     def __init__(self, rude_comments, normal_comments, textual=True, manual=True, use_tfidf=False, use_normal_words=False, verbose=False):
@@ -87,46 +97,8 @@ class SiteCommentFeatures:
         if self.verbose:
             print("Text feature number: %s" % (str(self.textual_feature_number)))
 
-        
     def setup_manual(self):
-        total = float(len(self.rude_comments))
-
-        self.rude_post_authors = dict()
-        for comment in self.rude_comments:
-            self.rude_post_authors[comment.post_author_id] = self.rude_post_authors.get(comment.post_author_id, 0) + 1
-        normal_post_authors = dict()
-        for comment in self.normal_comments:
-            normal_post_authors[comment.post_author_id] = normal_post_authors.get(comment.post_author_id, 0) + 1
-
-        for author in self.rude_post_authors:
-            rude = float(self.rude_post_authors[author])
-            normal = float(normal_post_authors.get(author, 0.))
-            self.rude_post_authors[author] = rude/(rude + normal)
-
-        self.rude_comment_authors = dict()
-        for comment in self.rude_comments:
-            self.rude_comment_authors[comment.author_id] = self.rude_comment_authors.get(comment.author_id, 0) + 1
-        normal_comment_authors = dict()
-        for comment in self.normal_comments:
-            normal_comment_authors[comment.author_id] = normal_comment_authors.get(comment.author_id, 0) + 1
-
-        for author in self.rude_comment_authors:
-            rude = float(self.rude_comment_authors[author])
-            normal = float(normal_comment_authors.get(author, 0.))
-            self.rude_comment_authors[author] = rude/(rude + normal)
-
-        # Переделать на нормальную калибровку (см. Флах, стр. 326)
-        answers = float(len([comment for comment in self.rude_comments if comment.answer_id > 0]))
-        self.question_prob = (total - answers)/total
-        self.answer_prob = answers/total
-        if self.verbose:
-            print("Probs, ans: %s, q: %s" % (str(self.answer_prob), str(self.question_prob)))
-        
-        negative = float(len([comment for comment in self.rude_comments if comment.post_score <= 0]))
-        self.negative_prob = negative/total
-        self.positive_prob = (total-negative)/total
-        if self.verbose:
-            print("Probs, neg: %s, pos: %s" % (str(self.negative_prob), str(self.positive_prob)))
+        pass
     
     def setup(self):
         self.setup_textual()
@@ -141,6 +113,10 @@ class SiteCommentFeatures:
         return feature_number
 
     def feature(self, comment):
+        def word_occurrence(words, comment):
+            if len(comment.processed_body.split(' ')) == 0:
+                return 0
+            return sum([1 if word in words else 0 for word in comment.processed_body.split(' ')])
         shift = 0
         result = np.zeros(self.feature_number())
         if self.textual:
@@ -158,18 +134,17 @@ class SiteCommentFeatures:
                     result[shift+index] = common.get(word, 0.)
             shift += self.textual_feature_number
         if self.manual:
-            result[shift+SiteCommentFeatures.POST_AUTHOR_ID_FEATURE] = (self.rude_post_authors.get(comment.post_author_id, 0.) + 1.) / (len(self.rude_post_authors) + 2)
-            result[shift+SiteCommentFeatures.COMMENT_AUTHOR_ID_FEATURE] = (self.rude_comment_authors.get(comment.author_id, 0.) + 1.) / (len(self.rude_comment_authors) + 2)
-            result[shift+SiteCommentFeatures.QA_FEATURE] = 0 if comment.answer_id > 0 else 1
-            result[shift+SiteCommentFeatures.POST_SCORE_FEATURE] = comment.post_score 
-            rude_words = CommentStaticData.processed_rude_words()            
-            result[shift+SiteCommentFeatures.RUDE_WORD_FEATURE] = sum([1 if word in rude_words else 0 for word in comment.processed_body.split(' ')])
-            result[shift+SiteCommentFeatures.SEND_TO_SEARCH_FEATURE] = len(self.search_regexp.findall(comment.body))
-            wiktionary_org_rude_words = CommentStaticData.processed_wiktionary_org_rude_words()
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_RUDE_WORD_FEATURE] = sum([1 if word in wiktionary_org_rude_words else 0 for word in comment.processed_body.split(' ')])
-            #result[shift+SiteCommentFeatures.PARSED_WORD_DICT_LEN_FEATURE] = float(len(comment.processed_body.split()))/float(len(comment.body.split()))
-            #if result[shift+SiteCommentFeatures.SEND_TO_SEARCH_FEATURE] > 0:
-            #    print("[Found a search link] %s" % (str(comment.body)))
+            result[shift+SiteCommentFeatures.QA_FEATURE]        = 0 if comment.answer_id > 0 else 1
+            result[shift+SiteCommentFeatures.POST_SCORE_FEATURE]= comment.post_score     
+            result[shift+SiteCommentFeatures.RUDE_WORD_FEATURE] = word_occurrence(CommentStaticData.processed_rude_words(), comment)
+            result[shift+SiteCommentFeatures.SEND_TO_SEARCH_FEATURE]    = len(self.search_regexp.findall(comment.body))
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_OBSCENE_WORD_FEATURE]   = word_occurrence(WiktionaryOrg.obscene_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE]   = word_occurrence(WiktionaryOrg.abusive_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_RUDE_WORD_FEATURE]      = word_occurrence(WiktionaryOrg.rude_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_IRONY_WORD_FEATURE]     = word_occurrence(WiktionaryOrg.irony_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE]  = word_occurrence(WiktionaryOrg.contempt_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_NEGLECT_WORD_FEATURE]   = word_occurrence(WiktionaryOrg.neglect_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE]   = word_occurrence(WiktionaryOrg.humiliation_words(), comment)
 
         return result
 
@@ -177,7 +152,6 @@ class SiteCommentFeatures:
         shift = 0
         if self.textual:
             shift += self.textual_feature_number
-        
         return features[shift+feature_id]
 
     def store(self):
@@ -189,8 +163,6 @@ class SiteCommentFeatures:
             "manual": self.manual,
             "use_tfidf": self.use_tfidf,
             "use_normal_words": self.use_normal_words,
-            "rude_post_authors": self.rude_post_authors,
-            "rude_comment_authors": self.rude_comment_authors
         }
 
     @staticmethod
@@ -208,8 +180,6 @@ class SiteCommentFeatures:
         obj.common = data.get('common')
         obj.words = [word for word, _ in sorted(obj.common)] if obj.common is not None else None
         obj.textual_feature_number = data.get('textual_feature_number')
-        obj.rude_post_authors = data.get('rude_post_authors')
-        obj.rude_comment_authors = data.get('rude_comment_authors')
 
         return obj
 

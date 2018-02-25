@@ -16,6 +16,7 @@
             <a {% if "index" in active_tab %}class="active" {% endif %} href="/">Главная</a>
             {% if g.user %}
                 <a {% if "features" in active_tab %}class="active" {% endif %} href="{{ url_for('features') }}">Признаки</a>
+                <a {% if "roc" in active_tab %}class="active" {% endif %} href="{{ url_for('roc') }}">Признаки</a>
                 {% if g.user.role == "moderator" or g.user.role == "employe" %}
                     <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Для проверки</a>
                     <a {% if "skipped" in active_tab %}class="active" {% endif %} href="{{ url_for('skipped') }}">Пропущенные</a>
@@ -84,18 +85,53 @@
 {% elif  "features" == active_tab  %}
     <div>
         <p>
-            <div id="score-feuture" style="width: 100%;">
-                <a href="#">Нажмите, чтобы загрузить данные о <i>голосах за родительское сообщение</i>.</a>
+            <div id="score-feature" style="width: 100%;">
+                <a href="#">1. Нажмите, чтобы загрузить данные о <i>голосах за родительское сообщение</i>.</a>
             </div>
         </p>
         <p>
-            <div id="rude_words-feuture" style="width: 100%;">
-                <a href="#">Нажмите, чтобы загрузить данные о <i>количестве грубых слов в комментерии</i>.</a>
+            <div id="rude-words-feature" style="width: 100%;">
+                <a href="#">2. Нажмите, чтобы загрузить данные о <i>количестве грубых слов в комментерии</i>.</a>
             </div>
         </p>
         <p>
-            <div id="link-to-se-feuture" style="width: 100%;">
-                <a href="#">Нажмите, чтобы загрузить данные о <i>количестве отправок в поиск</i>.</a>
+            <div id="link-to-se-feature" style="width: 100%;">
+                <a href="#">3. Нажмите, чтобы загрузить данные о <i>количестве отправок в поиск</i>.</a>
+            </div>
+        </p>
+        <p>
+            <div id="obscene-word-feature" style="width: 100%;">
+                <a href="#">4. Нажмите, чтобы загрузить данные о <i>количестве матерных слов</i>.</a>
+            </div>
+        </p>
+        <p>
+            <div id="abusive-word-feature" style="width: 100%;">
+                <a href="#">5. Нажмите, чтобы загрузить данные о <i>количестве бранных слов</i>.</a>
+            </div>
+        </p>
+        <p>
+            <div id="rude-word-wiki-feature" style="width: 100%;">
+                <a href="#">6. Нажмите, чтобы загрузить данные о <i>количестве грубых слов (Вики)</i>.</a>
+            </div>
+        </p>
+        <p>
+            <div id="irony-word-feature" style="width: 100%;">
+                <a href="#">7. Нажмите, чтобы загрузить данные о <i>количестве слов иронии</i>.</a>
+            </div>
+        </p>
+        <p>
+            <div id="contempt-word-feature" style="width: 100%;">
+                <a href="#">8. Нажмите, чтобы загрузить данные о <i>количестве слов призрения</i>.</a>
+            </div>
+        </p>
+        <p>
+            <div id="neglet-word-feature" style="width: 100%;">
+                <a href="#">9. Нажмите, чтобы загрузить данные о <i>количестве слов пренебрежения</i>.</a>
+            </div>
+        </p>
+        <p>
+            <div id="humiliation-word-feature" style="width: 100%;">
+                <a href="#">10. Нажмите, чтобы загрузить данные о <i>количестве слов унижения</i>.</a>
             </div>
         </p>
     </div>

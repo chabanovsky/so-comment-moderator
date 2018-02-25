@@ -1,13 +1,27 @@
 var FEATURE_ENPOINT = "/api/features";
-var QA_FEATURE              = 2;
-var SCORE_FEATURE           = 3;
-var RUDE_WORD_FEATURE       = 4;
-var SEND_TO_SEARCH_FEATURE  = 5;
+var QA_FEATURE              = 0;
+var SCORE_FEATURE           = 1;
+var RUDE_WORD_FEATURE       = 2;
+var SEND_TO_SEARCH_FEATURE  = 3;
+var WIKTIONARY_ORG_OBSCENE_WORD_FEATURE = 4;
+var WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE = 5;
+var WIKTIONARY_ORG_RUDE_WORD_FEATURE    = 6;
+var WIKTIONARY_ORG_IRONY_WORD_FEATURE   = 7;
+var WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE= 8;
+var WIKTIONARY_ORG_NEGLECT_WORD_FEATURE = 9;
+var WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE = 10;
 
 var waitingDiv = '<div class="wait">Информация загружается...</div>';
-var scoreContainerId = "score-feuture";
-var rudeWordContainerId = "rude_words-feuture";
-var linkToSEContainerId = "link-to-se-feuture";
+var scoreContainerId = "score-feature";
+var rudeWordContainerId = "rude-words-feature";
+var linkToSEContainerId = "link-to-se-feature";
+var obsceneWordContainerId = "obscene-word-feature";
+var abusiveWordContainerId = "abusive-word-feature";
+var rudeWordWikiContainerId = "rude-word-wiki-feature";
+var ironyWordContainerId = "irony-word-feature";
+var contemptWordContainerId = "contempt-word-feature";
+var negletWordContainerId = "neglet-word-feature";
+var humiliationWordContainerId = "humiliation-word-feature";
 
 function group_by_count(data){
     var dictionary = {};
@@ -30,84 +44,45 @@ function group_by_count(data){
     return new_data
 }
 
+function addFeature(containerId, feature, title) {
+    $("#" + containerId + " a").click(function(event){
+        event.preventDefault();
+        var old_value = $("#" + containerId).html()
+        $("#" + containerId).html(waitingDiv)
+
+        loadHelper(FEATURE_ENPOINT + "?x=" + feature.toString(),
+            function(data){
+                $("#" + containerId).css("height", "400px");
+                drawFeature(
+                    containerId,
+                    title,
+                    data.x_name,
+                    "Количество",
+                    group_by_count(data.positive),
+                    group_by_count(data.negative),
+                    "Оскорбление",
+                    "Обычный комментарий" 
+                )
+            },
+            function(){
+                alert("Could not load feature data for the feature #" + feature.toString())
+                $("#" + containerId).html(old_value)
+            }
+        )
+    });
+}
+
 $(document).ready(function() {
-    $("#" + scoreContainerId + " a").click(function(event){
-        event.preventDefault();
-        var old_value = $("#" + scoreContainerId).html()
-        $("#" + scoreContainerId).html(waitingDiv)
-
-        loadHelper(FEATURE_ENPOINT + "?x=" + SCORE_FEATURE.toString(),
-            function(data){
-                $("#" + scoreContainerId).css("height", "400px");
-                drawFeature(
-                    scoreContainerId,
-                    "Рейтинг сообщения",
-                    data.x_name,
-                    "Количество",
-                    group_by_count(data.positive),
-                    group_by_count(data.negative),
-                    "Оскорбление",
-                    "Обычный комментарий" 
-                )
-            },
-            function(){
-                alert("Could not load feature data.")
-                $("#" + scoreContainerId).html(old_value)
-            }
-        )
-    });
-
-    $("#" + rudeWordContainerId + " a").click(function(event){
-        event.preventDefault();
-        var old_value = $("#" + rudeWordContainerId).html()
-        $("#" + rudeWordContainerId).html(waitingDiv)
-
-        loadHelper(FEATURE_ENPOINT + "?x=" + RUDE_WORD_FEATURE.toString(),
-            function(data){
-                $("#" + rudeWordContainerId).css("height", "400px");
-                drawFeature(
-                    rudeWordContainerId,
-                    "Кол-во грубых слов",
-                    data.x_name,
-                    "Количество",
-                    group_by_count(data.positive),
-                    group_by_count(data.negative),
-                    "Оскорбление",
-                    "Обычный комментарий" 
-                )
-            },
-            function(){
-                alert("Could not load feature data.")
-                $("#" + rudeWordContainerId).html(old_value)
-            }
-        )
-    });
-    
-    $("#" + linkToSEContainerId + " a").click(function(event){    
-        event.preventDefault();
-        var old_value = $("#" + linkToSEContainerId).html()
-        $("#" + linkToSEContainerId).html(waitingDiv)
-
-        loadHelper(FEATURE_ENPOINT + "?x=" + SEND_TO_SEARCH_FEATURE.toString(),
-            function(data){
-                $("#" + linkToSEContainerId).css("height", "400px");
-                drawFeature(
-                    linkToSEContainerId,
-                    "Отправка в поиск",
-                    data.x_name,
-                    "Количество",
-                    group_by_count(data.positive),
-                    group_by_count(data.negative),
-                    "Оскорбление",
-                    "Обычный комментарий" 
-                )
-            },
-            function(){
-                alert("Could not load feature data.")
-                $("#" + linkToSEContainerId).html(old_value)
-            }
-        )
-    });
+    addFeature(scoreContainerId, SCORE_FEATURE, "Рейтинг сообщения");
+    addFeature(rudeWordContainerId, RUDE_WORD_FEATURE, "Кол-во грубых слов");
+    addFeature(linkToSEContainerId, SEND_TO_SEARCH_FEATURE, "Отправка в поиск")
+    addFeature(obsceneWordContainerId, WIKTIONARY_ORG_OBSCENE_WORD_FEATURE, "Кол-во матерных слов");
+    addFeature(abusiveWordContainerId, WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE, "Кол-во бранных слов");
+    addFeature(rudeWordWikiContainerId, WIKTIONARY_ORG_RUDE_WORD_FEATURE, "Кол-во грубых слов (Вики)");
+    addFeature(ironyWordContainerId, WIKTIONARY_ORG_IRONY_WORD_FEATURE, "Кол-во слов иронии");
+    addFeature(contemptWordContainerId, WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE, "Кол-во слов призрения");
+    addFeature(negletWordContainerId, WIKTIONARY_ORG_NEGLECT_WORD_FEATURE, "Кол-во слов пренебрежения");
+    addFeature(humiliationWordContainerId, WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE, "Кол-во слов унижения");
 });
 
 function drawFeature(container, title, x_name, y_name, positive_class_data, negative_class_data, positive_class_name, negative_class_name){

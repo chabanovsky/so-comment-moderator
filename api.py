@@ -14,8 +14,10 @@ from flask import Flask, jsonify, render_template, g, url_for, redirect, request
 from meta import app as application, CURRENT_MODEL, MODEL_LOGISITIC_REGRESSION
 from db_models import JSONObjectData, SiteComment
 from features import SiteCommentFeatures
+from wiktionary_org import WiktionaryOrg
 
 @application.route("/api/features", endpoint="api_features")
+@application.route("/api/features/", endpoint="api_features")
 def api_features():
     if g.user is None:
         abort(404)
@@ -52,4 +54,33 @@ def api_features():
         "x_name": SiteCommentFeatures.feature_desc(x),
         "positive": positive_data,
         "negative": negative_data 
+    })
+
+@application.route("/api/wiktionary-org", endpoint="api_wiktionary_org")
+@application.route("/api/wiktionary-org/", endpoint="api_wiktionary_org")
+def api_wiktionary_org():
+    if g.user is None:
+        abort(404)    
+
+    words = int(request.args.get("words", None))
+    if words is None:
+        abort(404)
+
+    data = WiktionaryOrg.get_props(words)()
+    return jsonify(**{
+        "items": data
+    })
+    
+@application.route("/api/roc", endpoint="api_roc")
+@application.route("/api/roc/", endpoint="api_roc")
+def api_roc():
+    if g.user is None:
+        abort(404)
+    
+    if CURRENT_MODEL != MODEL_LOGISITIC_REGRESSION:
+        abort(404)
+
+    items = JSONObjectData.all_extra(JSONObjectData.LOGREG_TYPE_ID)
+    return jsonify(**{
+        "items": items
     })

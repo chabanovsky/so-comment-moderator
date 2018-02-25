@@ -65,6 +65,13 @@ def features():
         return redirect(url_for('index'))  
     return render_template('index.html', active_tab="features")
 
+@application.route("/roc", endpoint="roc")
+@application.route("/roc/", endpoint="roc")
+def roc():
+    if g.user is None:
+        return redirect(url_for('index'))  
+    return render_template('index.html', active_tab="roc", model=CURRENT_MODEL)
+
 @application.route("/verifying", endpoint="verifying")
 @application.route("/verifying/", endpoint="verifying")
 def verifying():
