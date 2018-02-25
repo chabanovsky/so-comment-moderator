@@ -3,7 +3,7 @@ import datetime
 import json
 
 from se_api import get_recent_comments, get_post_infos
-from db_models import SiteComment, DBModelAdder, JSONObjectData
+from db_models import SiteComment, DBModelAdder, JSONObjectData, CommentStaticData
 from utils import process_text
 
 from tfidf import DocsStats, Document
@@ -208,3 +208,28 @@ def analyse_with_cosine():
     rude_cluster = cosine.biggest_cluster()
     for item in rude_cluster:
         print("- ", item.body, "\r\n")
+
+
+def play():
+    rude_comments = SiteComment.rude_comments() 
+    #normal_comments = SiteComment.normal_comments()
+
+    rude_words_wiki = CommentStaticData.processed_wiktionary_org_rude_words() 
+    rude_words = CommentStaticData.processed_rude_words()
+    total = 0
+    total_wiki = 0
+    total_intersect = 0
+    for comment in rude_comments:
+        word_num = sum([1 if word in rude_words else 0 for word in comment.processed_body.split(' ')])
+        if word_num <= 0 and len(comment.processed_body.split(' ')) > 0:
+            print("[Not found rude words (%s)] [(%s)] || %s\r\n" % ( str(comment.comment_id), str(comment.processed_body), str(comment.body) ))
+            total += 1
+
+        word_num_wiki = sum([1 if word in rude_words_wiki else 0 for word in comment.processed_body.split(' ')])
+        if word_num_wiki <= 0 and len(comment.processed_body.split(' ')) > 0:
+            total_wiki += 1
+
+        if word_num_wiki > 0 and word_num > 0:
+            total_intersect += 1
+
+    print("In total: %s, wiki_total %s, total_intersect %s" % ( str(total), str(total_wiki), str(total_intersect) ))

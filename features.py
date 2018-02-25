@@ -18,8 +18,9 @@ class SiteCommentFeatures:
     POST_SCORE_FEATURE          = 3 # 4. Post score
     RUDE_WORD_FEATURE           = 4
     SEND_TO_SEARCH_FEATURE      = 5
+    WIKTIONARY_ORG_RUDE_WORD_FEATURE = 6
     
-    manual_feature_number = 6
+    manual_feature_number = 7
     feature_descs = {
         POST_AUTHOR_ID_FEATURE: u"Автор родительского сообщения",
         COMMENT_AUTHOR_ID_FEATURE: u"Автор комментария",
@@ -161,9 +162,11 @@ class SiteCommentFeatures:
             result[shift+SiteCommentFeatures.COMMENT_AUTHOR_ID_FEATURE] = (self.rude_comment_authors.get(comment.author_id, 0.) + 1.) / (len(self.rude_comment_authors) + 2)
             result[shift+SiteCommentFeatures.QA_FEATURE] = 0 if comment.answer_id > 0 else 1
             result[shift+SiteCommentFeatures.POST_SCORE_FEATURE] = comment.post_score 
-            rude_words = CommentStaticData.processed_rude_words()
+            rude_words = CommentStaticData.processed_rude_words()            
             result[shift+SiteCommentFeatures.RUDE_WORD_FEATURE] = sum([1 if word in rude_words else 0 for word in comment.processed_body.split(' ')])
             result[shift+SiteCommentFeatures.SEND_TO_SEARCH_FEATURE] = len(self.search_regexp.findall(comment.body))
+            wiktionary_org_rude_words = CommentStaticData.processed_wiktionary_org_rude_words()
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_RUDE_WORD_FEATURE] = sum([1 if word in wiktionary_org_rude_words else 0 for word in comment.processed_body.split(' ')])
             #result[shift+SiteCommentFeatures.PARSED_WORD_DICT_LEN_FEATURE] = float(len(comment.processed_body.split()))/float(len(comment.body.split()))
             #if result[shift+SiteCommentFeatures.SEND_TO_SEARCH_FEATURE] > 0:
             #    print("[Found a search link] %s" % (str(comment.body)))

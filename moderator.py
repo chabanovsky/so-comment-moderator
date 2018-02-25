@@ -15,7 +15,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
 
 from csv_data_uploader import CSVDataUploader
 from database import init_db
-from tasks import load_comments_from_se_to_db, analyse_comments, create_model, check_to_rebuild
+from tasks import load_comments_from_se_to_db, analyse_comments, create_model, check_to_rebuild, play
 
 from meta import *
 from views import *
@@ -46,7 +46,11 @@ if __name__ == "__main__":
 
         if str(sys.argv[1]) == "--check-to-rebuild":
             check_to_rebuild() 
-            sys.exit() 
+            sys.exit()
+
+        if str(sys.argv[1]) == "--play":
+            play() 
+            sys.exit()
 
         print("Wrong parameters. Check the spelling.")
         sys.exit()

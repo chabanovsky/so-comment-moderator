@@ -36,7 +36,7 @@ def process_text(text, short_filter=False, word_len_threshold=2):
     if short_filter:
         filter = ['PREP']
     else:    
-        filter = ['NPRO', 'PREP', 'PRED', 'CONJ', 'PRCL']
+        filter = ['NPRO', 'PREP', 'PRED', 'PRCL'] # 'CONJ' — минус
 
     text = filter_noise(text)
     text = text.lower()
