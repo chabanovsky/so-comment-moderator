@@ -221,18 +221,19 @@ def play():
         if len(comment.processed_body.split(' ')) == 0:
             continue
 
-        word_num = sum([1 if word in rude_words_wiki else 0 for word in comment.processed_body.split(' ')])
-        if word_num > 0:
+        words = [word for word in comment.processed_body.split(u' ') if word in rude_words_wiki]
+        if len(words) > 0:
             total_rude += 1
+            print("[Words: %s] ([%s]) || %s\r\n" % ( str(u' '.join(words)), str(u' '.join(comment.processed_body.split(u' '))), str(comment.body) ))
 
     for comment in normal_comments:
         if len(comment.processed_body.split(' ')) == 0:
             continue
 
-        words = [word for word in comment.processed_body.split(' ') if word in rude_words_wiki]
+        words = [word for word in comment.processed_body.split(u' ') if word in rude_words_wiki]
         if len(words) > 0:
             total_normal += 1
-            print("[Words: %s] || %s\r\n" % ( str(words), str(comment.body) ))
+#            print("[Words: %s] || %s\r\n" % ( str(words), str(comment.body) ))
         
-    print("Total rude %s, total normal %s" % ( str(total_rude), str(total_normal) ))
-    print("Words: %s" % ( str(rude_words_wiki) ))
+    print("Total rude %s, total normal %s, comment [%s]" % ( str(total_rude), str(total_normal), str(comment.body) ))
+    print("Words: %s" % ( str(' '.join(rude_words_wiki)) ))

@@ -37,7 +37,7 @@ def api_features():
     rude_comments   = SiteComment.rude_comments() 
     normal_comments = SiteComment.normal_comments()
 
-    def get_data(feature_maker, comments, label):
+    def get_data(feature_maker, comments, label, x):
         data = list()
         for comment in comments:
             feature = feature_maker.feature(comment)
@@ -47,8 +47,8 @@ def api_features():
             })
         return data
 
-    positive_data = get_data(feature_maker, rude_comments, SiteCommentFeatures.RUDE_CLASS)
-    negative_data = get_data(feature_maker, normal_comments, SiteCommentFeatures.NORMAL_CLASS)
+    positive_data = get_data(feature_maker, rude_comments, SiteCommentFeatures.RUDE_CLASS, x)
+    negative_data = get_data(feature_maker, normal_comments, SiteCommentFeatures.NORMAL_CLASS, x)
     
     return jsonify(**{
         "x_name": SiteCommentFeatures.feature_desc(x),

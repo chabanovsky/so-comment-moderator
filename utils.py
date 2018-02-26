@@ -3,16 +3,16 @@ import re
 import nltk
 import pymorphy2
 import collections
-from nltk.stem.snowball import SnowballStemmer 
+from snowballstemmer import stemmer as Stemmer 
 
 morph = pymorphy2.MorphAnalyzer()
 
 def filter_noise(text):
-    text = re.sub('<pre>.*?</pre>',' ', text, flags=re.DOTALL)
-    text = re.sub('<code>.*?</code>',' ', text, flags=re.DOTALL)
-    text = re.sub('<[^<]+?>', ' ', text, flags=re.DOTALL) 
-    text = re.sub('(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)', ' ', text, flags=re.DOTALL)             
-    text = re.sub('(https|http)?:\/\/.*', '', text)
+    text = re.sub('<pre>.*?</pre>',u' ', text, flags=re.DOTALL)
+    text = re.sub('<code>.*?</code>',u' ', text, flags=re.DOTALL)
+    text = re.sub('<[^<]+?>', u' ', text, flags=re.DOTALL) 
+    text = re.sub('(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)', u' ', text, flags=re.DOTALL)             
+    text = re.sub('(https|http)?:\/\/.*', u'', text)
     return text
 
 def process_text(text, short_filter=False, word_len_threshold=2):
@@ -32,7 +32,7 @@ def process_text(text, short_filter=False, word_len_threshold=2):
         if str(p.tag.POS) not in filter:
             return str(p.normal_form)  
 
-    otput_data = ""
+    otput_data = u""
     if short_filter:
         filter = ['PREP']
     else:    
@@ -42,23 +42,23 @@ def process_text(text, short_filter=False, word_len_threshold=2):
     text = text.lower()
 
     sent_text = nltk.sent_tokenize(text)
-    stemmer = SnowballStemmer("russian")
+    stemmer = Stemmer("russian")
     for sentence in sent_text:
         tokenized_text = nltk.word_tokenize(sentence)
         for token in tokenized_text:
             
-            token = token.replace('.', ' ')
-            token = token.replace('/', ' ')
-            token = token.replace('=', ' ')
-            token = token.replace('`', ' ')
-            token = token.replace('-', ' ')
-            token = token.replace('–', ' ')
+            token = token.replace('.', u' ')
+            token = token.replace('/', u' ')
+            token = token.replace('=', u' ')
+            token = token.replace('`', u' ')
+            token = token.replace('-', u' ')
+            token = token.replace('–', u' ')
 
             for sub_token in token.split():
                 processed = process(filter, sub_token, word_len_threshold)
                 if processed is not None:
-                    stemmed = stemmer.stem(processed)
-                    otput_data += " " + stemmed
+                    stemmed = stemmer.stemWord(processed)
+                    otput_data += u" " + stemmed
         
     return otput_data
 

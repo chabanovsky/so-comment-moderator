@@ -113,10 +113,6 @@ class SiteCommentFeatures:
         return feature_number
 
     def feature(self, comment):
-        def word_occurrence(words, comment):
-            if len(comment.processed_body.split(' ')) == 0:
-                return 0
-            return sum([1 if word in words else 0 for word in comment.processed_body.split(' ')])
         shift = 0
         result = np.zeros(self.feature_number())
         if self.textual:
@@ -136,15 +132,15 @@ class SiteCommentFeatures:
         if self.manual:
             result[shift+SiteCommentFeatures.QA_FEATURE]        = 0 if comment.answer_id > 0 else 1
             result[shift+SiteCommentFeatures.POST_SCORE_FEATURE]= comment.post_score     
-            result[shift+SiteCommentFeatures.RUDE_WORD_FEATURE] = word_occurrence(CommentStaticData.processed_rude_words(), comment)
+            result[shift+SiteCommentFeatures.RUDE_WORD_FEATURE] = SiteCommentFeatures.word_occurrence(CommentStaticData.processed_rude_words(), comment)
             result[shift+SiteCommentFeatures.SEND_TO_SEARCH_FEATURE]    = len(self.search_regexp.findall(comment.body))
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_OBSCENE_WORD_FEATURE]   = word_occurrence(WiktionaryOrg.obscene_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE]   = word_occurrence(WiktionaryOrg.abusive_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_RUDE_WORD_FEATURE]      = word_occurrence(WiktionaryOrg.rude_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_IRONY_WORD_FEATURE]     = word_occurrence(WiktionaryOrg.irony_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE]  = word_occurrence(WiktionaryOrg.contempt_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_NEGLECT_WORD_FEATURE]   = word_occurrence(WiktionaryOrg.neglect_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE]   = word_occurrence(WiktionaryOrg.humiliation_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_OBSCENE_WORD_FEATURE]   = SiteCommentFeatures.word_occurrence(WiktionaryOrg.obscene_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE]   = SiteCommentFeatures.word_occurrence(WiktionaryOrg.abusive_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_RUDE_WORD_FEATURE]      = SiteCommentFeatures.word_occurrence(WiktionaryOrg.rude_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_IRONY_WORD_FEATURE]     = SiteCommentFeatures.word_occurrence(WiktionaryOrg.irony_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE]  = SiteCommentFeatures.word_occurrence(WiktionaryOrg.contempt_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_NEGLECT_WORD_FEATURE]   = SiteCommentFeatures.word_occurrence(WiktionaryOrg.neglect_words(), comment)
+            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE]   = SiteCommentFeatures.word_occurrence(WiktionaryOrg.humiliation_words(), comment)
 
         return result
 
@@ -187,3 +183,8 @@ class SiteCommentFeatures:
     def feature_desc(feature_id):
         return SiteCommentFeatures.feature_descs.get(feature_id)
     
+    @staticmethod
+    def word_occurrence(words, comment):
+        if len(comment.processed_body.split(' ')) == 0:
+            return 0
+        return len([word for word in comment.processed_body.split(' ') if word in words])
