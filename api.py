@@ -76,6 +76,13 @@ def api_roc():
         abort(404)
 
     items = JSONObjectData.all_extra(JSONObjectData.LOGREG_TYPE_ID)
+    objects = []
+    for item in items:
+        objects.append({
+            "extra": item.extra,
+            "added": item.added
+        })
+         
     return jsonify(**{
-        "items": items
+        "items": objects
     })
