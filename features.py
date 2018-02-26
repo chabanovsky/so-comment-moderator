@@ -60,8 +60,7 @@ class SiteCommentFeatures:
     ]
 
     manual_feature_number = len(manul_features)
-
-    search_regexp  = re.compile("|".join(CommentStaticData.serach_links), flags=re.DOTALL)
+    search_regexp = re.compile("|".join(CommentStaticData.serach_links), flags=re.DOTALL)
 
     def __init__(self, rude_comments, normal_comments, textual=True, manual=True, use_tfidf=False, use_normal_words=False, verbose=False):
         self.rude_comments  = rude_comments
