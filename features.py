@@ -25,7 +25,6 @@ class SiteCommentFeatures:
     WIKTIONARY_ORG_NEGLECT_WORD_FEATURE = 9
     WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE = 10
     
-    manual_feature_number = 11
     feature_descs = {
         QA_FEATURE: u"Вопрос или ответ",
         POST_SCORE_FEATURE: u"Рейтинг родительского сообщения",
@@ -40,6 +39,30 @@ class SiteCommentFeatures:
         WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE: u"Кол-во слов унижения"
     }
 
+    feature_func = {
+        QA_FEATURE: lambda comment: 0 if comment.answer_id > 0 else 1,
+        POST_SCORE_FEATURE: lambda comment: comment.post_score,
+        RUDE_WORD_FEATURE:  lambda comment: SiteCommentFeatures.word_occurrence(CommentStaticData.processed_rude_words(), comment),
+        SEND_TO_SEARCH_FEATURE: lambda comment: len(SiteCommentFeatures.search_regexp.findall(comment.body)),
+        WIKTIONARY_ORG_OBSCENE_WORD_FEATURE:lambda comment: SiteCommentFeatures.word_occurrence(WiktionaryOrg.obscene_words(), comment),
+        WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE:lambda comment: SiteCommentFeatures.word_occurrence(WiktionaryOrg.abusive_words(), comment),
+        WIKTIONARY_ORG_RUDE_WORD_FEATURE:   lambda comment: SiteCommentFeatures.word_occurrence(WiktionaryOrg.rude_words(), comment),
+        WIKTIONARY_ORG_IRONY_WORD_FEATURE:  lambda comment: SiteCommentFeatures.word_occurrence(WiktionaryOrg.irony_words(), comment),
+        WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE:   lambda comment: SiteCommentFeatures.word_occurrence(WiktionaryOrg.contempt_words(), comment),
+        WIKTIONARY_ORG_NEGLECT_WORD_FEATURE:    lambda comment: SiteCommentFeatures.word_occurrence(WiktionaryOrg.neglect_words(), comment),
+        WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE:lambda comment: SiteCommentFeatures.word_occurrence(WiktionaryOrg.humiliation_words(), comment)
+    }
+
+    manul_features = [
+        QA_FEATURE, POST_SCORE_FEATURE, RUDE_WORD_FEATURE, SEND_TO_SEARCH_FEATURE, WIKTIONARY_ORG_OBSCENE_WORD_FEATURE,
+        WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE, WIKTIONARY_ORG_RUDE_WORD_FEATURE, WIKTIONARY_ORG_IRONY_WORD_FEATURE, WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE,
+        WIKTIONARY_ORG_NEGLECT_WORD_FEATURE, WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE
+    ]
+
+    manual_feature_number = len(manul_features)
+
+    search_regexp  = re.compile("|".join(CommentStaticData.serach_links), flags=re.DOTALL)
+
     def __init__(self, rude_comments, normal_comments, textual=True, manual=True, use_tfidf=False, use_normal_words=False, verbose=False):
         self.rude_comments  = rude_comments
         self.normal_comments= normal_comments
@@ -48,8 +71,6 @@ class SiteCommentFeatures:
         self.use_tfidf      = use_tfidf
         self.verbose        = verbose
         self.use_normal_words  = use_normal_words
-        self.search_regexp  = re.compile("|".join(CommentStaticData.serach_links), flags=re.DOTALL)
-        self.reply_regexp   = re.compile("@[^@]+", flags=re.DOTALL)
         self.stats          = None
         self.common         = None
         self.words          = None
@@ -130,25 +151,16 @@ class SiteCommentFeatures:
                     result[shift+index] = common.get(word, 0.)
             shift += self.textual_feature_number
         if self.manual:
-            result[shift+SiteCommentFeatures.QA_FEATURE]        = 0 if comment.answer_id > 0 else 1
-            result[shift+SiteCommentFeatures.POST_SCORE_FEATURE]= comment.post_score     
-            result[shift+SiteCommentFeatures.RUDE_WORD_FEATURE] = SiteCommentFeatures.word_occurrence(CommentStaticData.processed_rude_words(), comment)
-            result[shift+SiteCommentFeatures.SEND_TO_SEARCH_FEATURE]    = len(self.search_regexp.findall(comment.body))
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_OBSCENE_WORD_FEATURE]   = SiteCommentFeatures.word_occurrence(WiktionaryOrg.obscene_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_ABUSIVE_WORD_FEATURE]   = SiteCommentFeatures.word_occurrence(WiktionaryOrg.abusive_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_RUDE_WORD_FEATURE]      = SiteCommentFeatures.word_occurrence(WiktionaryOrg.rude_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_IRONY_WORD_FEATURE]     = SiteCommentFeatures.word_occurrence(WiktionaryOrg.irony_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_CONTEMPT_WORD_FEATURE]  = SiteCommentFeatures.word_occurrence(WiktionaryOrg.contempt_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_NEGLECT_WORD_FEATURE]   = SiteCommentFeatures.word_occurrence(WiktionaryOrg.neglect_words(), comment)
-            result[shift+SiteCommentFeatures.WIKTIONARY_ORG_HUMILIATION_WORD_FEATURE]   = SiteCommentFeatures.word_occurrence(WiktionaryOrg.humiliation_words(), comment)
+            for fearure in SiteCommentFeatures.manul_features:
+                result[shift+fearure] = SiteCommentFeatures.feature_func[fearure](comment)
 
         return result
 
-    def manual_feature_value(self, features, feature_id):
-        shift = 0
-        if self.textual:
-            shift += self.textual_feature_number
-        return features[shift+feature_id]
+    @staticmethod
+    def manual_feature_value(comment, feature):
+        if feature < 0 or feature >= SiteCommentFeatures.manual_feature_number:
+            return 0
+        return SiteCommentFeatures.feature_func[feature](comment)
 
     def store(self):
         return {

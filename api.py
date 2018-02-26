@@ -29,26 +29,21 @@ def api_features():
     if CURRENT_MODEL != MODEL_LOGISITIC_REGRESSION:
         abort(404)
     
-    feature_saved_data = JSONObjectData.last(JSONObjectData.FEATURE_TYPE_ID)
-    if feature_saved_data is None:
-        return None
-
-    feature_maker   = SiteCommentFeatures.restore(json.loads(feature_saved_data.object_json), True)
     rude_comments   = SiteComment.rude_comments() 
     normal_comments = SiteComment.normal_comments()
 
-    def get_data(feature_maker, comments, label, x):
+    def get_data(comments, feature, label):
         data = list()
         for comment in comments:
-            feature = feature_maker.feature(comment)
+            feature_value = SiteCommentFeatures.manual_feature_value(comment, feature)
             data.append({
-                "x": feature_maker.manual_feature_value(feature, x),
+                "x": feature_value,
                 "label": label
             })
         return data
 
-    positive_data = get_data(feature_maker, rude_comments, SiteCommentFeatures.RUDE_CLASS, x)
-    negative_data = get_data(feature_maker, normal_comments, SiteCommentFeatures.NORMAL_CLASS, x)
+    positive_data = get_data(rude_comments, x, SiteCommentFeatures.RUDE_CLASS)
+    negative_data = get_data(normal_comments, x, SiteCommentFeatures.NORMAL_CLASS)
     
     return jsonify(**{
         "x_name": SiteCommentFeatures.feature_desc(x),
