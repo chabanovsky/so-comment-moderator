@@ -7,6 +7,10 @@
 <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 <script type="text/javascript" async="" src="/m/scripts/feature_analysis.js"></script>
 {% endif %}
+{% if "roc" == active_tab %}    
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script type="text/javascript" async="" src="/m/scripts/roc.js"></script>
+{% endif %}
 {% endblock %} 
 {% block title %}Модератор комментариев{% endblock %} 
 {% block content %}
@@ -15,17 +19,16 @@
         <div id="tabs">
             <a {% if "index" in active_tab %}class="active" {% endif %} href="/">Главная</a>
             {% if g.user %}
+                {% if g.user.role == "moderator" or g.user.role == "employe" %}
                 <a {% if "features" in active_tab %}class="active" {% endif %} href="{{ url_for('features') }}">Признаки</a>
                 <a {% if "roc" in active_tab %}class="active" {% endif %} href="{{ url_for('roc') }}">РХП</a>
-                {% if g.user.role == "moderator" or g.user.role == "employe" %}
-                    <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Для проверки</a>
-                    <a {% if "skipped" in active_tab %}class="active" {% endif %} href="{{ url_for('skipped') }}">Пропущенные</a>
-                    <a {% if "verified" in active_tab %}class="active" {% endif %} href="{{ url_for('verified') }}">Проверенные</a>
+                <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Для проверки</a>
+                <a {% if "skipped" in active_tab %}class="active" {% endif %} href="{{ url_for('skipped') }}">Пропущенные</a>
+                <a {% if "verified" in active_tab %}class="active" {% endif %} href="{{ url_for('verified') }}">Проверенные</a>
                 {% endif%}
             {% endif %}
         </div>
     </div>
-
 {% if 'index' == active_tab %}
     {% if not g.user %}
     <p>
@@ -53,6 +56,10 @@
         Мы — люди, эмоции неотъемлемая часть нашей природы. Правда, это не отменяет наше желание уменьшить шум, увеличив, по возможности, полезный сигнал.
         <br/><br/>
         Этот сайт нужен для аналитики и настройки «модератора». Результат работы программы доступны в реальном времени в чате: <a target="_blank" href="https://chat.stackexchange.com/rooms/73258/">https://chat.stackexchange.com/rooms/73258/</a>.
+    </p>
+{% elif "roc" == active_tab %}    
+    <p>
+        Реализация будет в скором будущем.
     </p>
 {% elif "verifying" == active_tab %}
     <p>
