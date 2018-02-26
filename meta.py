@@ -21,7 +21,7 @@ def clear_after_resp():
     engine.dispose()
 
 LANGUAGE = "ru"
-APP_URL = "http://commentmod.ru" # "http://benice.rudevs.ru"
+APP_URL = "http://benice.rudevs.ru"
 DB_NAME = "comment_moderator"
 FEED_APP_TITLE = u"Модератор комментариев"
 SO_URL = "https://%sstackoverflow.com" % (str(LANGUAGE + ".") if LANGUAGE != "en" else "")
