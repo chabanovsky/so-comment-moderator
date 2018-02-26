@@ -19,12 +19,12 @@
         <div id="tabs">
             <a {% if "index" in active_tab %}class="active" {% endif %} href="/">Главная</a>
             {% if g.user %}
-                {% if g.user.role == "moderator" or g.user.role == "employe" %}
                 <a {% if "features" in active_tab %}class="active" {% endif %} href="{{ url_for('features') }}">Признаки</a>
                 <a {% if "roc" in active_tab %}class="active" {% endif %} href="{{ url_for('roc') }}">РХП</a>
-                <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Для проверки</a>
-                <a {% if "skipped" in active_tab %}class="active" {% endif %} href="{{ url_for('skipped') }}">Пропущенные</a>
-                <a {% if "verified" in active_tab %}class="active" {% endif %} href="{{ url_for('verified') }}">Проверенные</a>
+                {% if g.user.role == "moderator" or g.user.role == "employe" %}
+                    <a {% if "verifying" in active_tab %}class="active" {% endif %} href="{{ url_for('verifying') }}">Для проверки</a>
+                    <a {% if "skipped" in active_tab %}class="active" {% endif %} href="{{ url_for('skipped') }}">Пропущенные</a>
+                    <a {% if "verified" in active_tab %}class="active" {% endif %} href="{{ url_for('verified') }}">Проверенные</a>
                 {% endif%}
             {% endif %}
         </div>
