@@ -214,7 +214,7 @@ def analyse_with_cosine():
 def play():
     rude_comments = SiteComment.rude_comments() 
     normal_comments = SiteComment.normal_comments()
-    rude_words_wiki = WiktionaryOrg.neglect_words()
+    rude_words_wiki = WiktionaryOrg.humiliation_words()
     total_rude = 0
     total_normal = 0
     for comment in rude_comments:

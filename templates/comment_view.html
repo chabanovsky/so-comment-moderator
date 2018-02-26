@@ -5,7 +5,7 @@
             {{ item.body|safe }}
         </div>
         <div class="statement-info">
-            <span>{{ item.creation_date.strftime('%H%:%M  %d.%m') }}</span>
+            <span>{{ item.creation_date.strftime('%H:%M  %d.%m') }}</span>
             <span> | </span>
             <span class="channel-name"><a target="_blank" href="{{ so_url }}/u/{{ item.author_id }}">@{{ item.author_name }}</a></span>
             <span> | </span>
