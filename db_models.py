@@ -242,7 +242,7 @@ class JSONObjectData(db.Model):
     @staticmethod
     def all_extra(type_id, limit=None):
         session = db_session()
-        query = session.query(JSONObjectData.extra, JSONObjectData.added).filter(JSONObjectData.type_id==type_id).order_by(desc(JSONObjectData.added))
+        query = session.query(JSONObjectData.extra.label('extra'), JSONObjectData.added.label('added')).filter(JSONObjectData.type_id==type_id).order_by(desc(JSONObjectData.added))
         if limit is not None:
             query = query.limit(limit)
         result = query.all()
