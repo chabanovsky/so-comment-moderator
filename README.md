@@ -1,15 +1,15 @@
 # Stack Overflow in Russian Comment Moderator
 
-This is a auto moderator that helps me to track rude comments on Stack Overflow in Russian
+This is a auto moderator that helps us to track rude comments on Stack Overflow in Russian
 
 Basically for a long time I had been reviewing most of the posts on Stack Overflow in Russian until we had something like 100 questions per day. Then I started reviewing only questions from new users wich I have not done anymore for a year almost. 
 
-Over that time I found that it's really hard for some people to keep calm when they see something, let's say, not 100% suitable for our site. I mean, badly written questions. The people may sometimes forget that if one writes poor questions that means one and only one thing — this person writes poor questions. It does not mean that the person is a "bad" one. Currently I cannot do so anymore because of the number of comments. On the other hand with more and more new users that visit the site very day the need for moderation increases. I hope this robo–moderator will help us keep kindness atmosphere in the community regardless any obstacles in our way!
+Over that time I found that it's really hard for some people to keep calm when they see something, let's say, not 100% suitable for our site. I mean, badly written questions. The people may sometimes forget that if one writes poor questions that means one and only one thing — this person writes poor questions. It does not mean that the person is a "bad" one. Currently I cannot dedicate time on moderation of comments. On the other hand with more and more new users that visit the site every day the need for moderation increases. I hope this robo–moderator will help us keep kindness atmosphere in the community regardless any obstacles on our way!
 
 
 # Take A Look At It Live
 
-As it's said: first rule of a ML project is do not use ML in the project! The app is live with the besic model ever https://chat.stackexchange.com/rooms/73258/
+The app is live with the besic model ever: https://chat.stackexchange.com/rooms/73258/. Admin app is depoyed on http://benice.rudevs.ru/
 
 
 # Specification Or How It Words
