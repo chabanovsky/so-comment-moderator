@@ -62,7 +62,14 @@ class SiteCommentFeatures:
     manual_feature_number = len(manul_features)
     search_regexp = re.compile("|".join(CommentStaticData.serach_links), flags=re.DOTALL)
 
-    def __init__(self, rude_comments, normal_comments, textual=True, manual=True, use_tfidf=False, use_normal_words=False, verbose=False):
+    def __init__(self, rude_comments, 
+            normal_comments, 
+            textual=True, 
+            manual=True, 
+            wiktionary_as_dict=True, 
+            use_tfidf=False, 
+            use_normal_words=False, 
+            verbose=False):
         self.rude_comments  = rude_comments
         self.normal_comments= normal_comments
         self.textual        = textual
@@ -73,9 +80,10 @@ class SiteCommentFeatures:
         self.stats          = None
         self.common         = None
         self.words          = None
+        self.wiktionary_as_dict = wiktionary_as_dict
 
         if self.verbose:
-            print("[SiteCommentFeatures setup] tfidf: %s, norm/w: %s" % (str(self.use_tfidf), str(self.use_normal_words)))
+            print("[SiteCommentFeatures setup] tfidf: %s, norm/w: %s, wikti: %s" % ( str(self.use_tfidf), str(self.use_normal_words), str(self.wiktionary_as_dict) ))
 
     def setup_tfidf(self):
         self.stats = DocsStats()
@@ -106,16 +114,21 @@ class SiteCommentFeatures:
     def setup_textual(self):
         if self.use_tfidf:
             self.setup_tfidf()
-            return
+        else:
+            text = " ".join([comment.processed_body for comment in self.rude_comments])
+            if self.use_normal_words:
+                text += " ".join([comment.processed_body for comment in self.normal_comments])
+            text = text.split(" ")
+            if self.wiktionary_as_dict:
+                props = WiktionaryOrg.the_props()
+                for key in sorted(props):
+                    text.extend(props[key]())
 
-        text = " ".join([comment.processed_body for comment in self.rude_comments])
-        if self.use_normal_words:
-            text += " ".join([comment.processed_body for comment in self.normal_comments])
-        self.common = collections.Counter(text.split(" ")).most_common()
-        self.words = [word for word, _ in sorted(self.common)]
-        self.textual_feature_number = len(self.words)
-        if self.verbose:
-            print("Text feature number: %s" % (str(self.textual_feature_number)))
+            self.common = collections.Counter(text).most_common()
+            self.words = [word for word, _ in sorted(self.common)]
+            self.textual_feature_number = len(self.words)
+            if self.verbose:
+                print("Text feature number: %s" % (str(self.textual_feature_number)))
 
     def setup_manual(self):
         pass
@@ -152,6 +165,13 @@ class SiteCommentFeatures:
         if self.manual:
             for fearure in SiteCommentFeatures.manul_features:
                 result[shift+fearure] = SiteCommentFeatures.feature_func[fearure](comment)
+            shift += self.manual_feature_number
+        if self.wiktionary_as_dict:
+            props = WiktionaryOrg.the_props()
+            wikti_words = list()
+            for key in sorted(props):
+                wikti_words.extend(props[key]())
+                
 
         return result
 
@@ -168,6 +188,7 @@ class SiteCommentFeatures:
             "textual_feature_number": self.textual_feature_number,
             "textual": self.textual,
             "manual": self.manual,
+            "wiktionary_as_dict": self.wiktionary_as_dict,
             "use_tfidf": self.use_tfidf,
             "use_normal_words": self.use_normal_words,
         }
@@ -178,6 +199,7 @@ class SiteCommentFeatures:
             None, None,
             data.get('textual'),
             data.get('manual'),
+            data.get('wiktionary_as_dict'),
             data.get('use_tfidf'),
             data.get('use_normal_words'),
             verbose

@@ -66,6 +66,15 @@ class WiktionaryOrg:
         return WiktionaryOrg.get_props(prop)
 
     @staticmethod
+    def the_props():
+        if WiktionaryOrg.__props is not None:
+            return WiktionaryOrg.__props
+        
+        WiktionaryOrg.get_props("")
+        return WiktionaryOrg.the_props()
+
+
+    @staticmethod
     def obscene_words():
         if WiktionaryOrg.processed_obscene_word_list is not None:
             return WiktionaryOrg.processed_obscene_word_list

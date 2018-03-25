@@ -10,7 +10,7 @@ class SiteCommentFeatureList:
         self.rude_train, self.rude_test = rude_comments[:self.rude_border], rude_comments[self.rude_border:]
         self.normal_train, self.normal_test = normal_comments[:self.normal_border], normal_comments[self.normal_border:]
 
-        self.feature_maker = SiteCommentFeatures(self.rude_train, self.normal_train, True, True, False, True, True)
+        self.feature_maker = SiteCommentFeatures(self.rude_train, self.normal_train, True, True, True, False, True, True)
         self.feature_maker.setup()
 
     def train_set(self):
