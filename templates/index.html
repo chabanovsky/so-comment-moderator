@@ -59,6 +59,7 @@
     </p>
 {% elif "roc" == active_tab %}    
 <p>
+    <div id="roc-id" style="display:none;">{{ page }}</div>
     <div id="roc-chart-root">
     </div>
 </p>
@@ -147,7 +148,7 @@
 
 </div>
 
-{% if "verifying" == active_tab or "skipped" == active_tab or "verified" == active_tab %}    
+{% if "verifying" == active_tab or "skipped" == active_tab or "verified" == active_tab or "roc" == active_tab %}     
 {% include 'paginator.html' %} 
 {% endif %}
 

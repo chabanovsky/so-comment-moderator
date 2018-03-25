@@ -20,7 +20,7 @@ from flask.ext.sqlalchemy import Pagination
 
 from meta import app as application, db, db_session, engine, FEED_APP_TITLE, APP_URL, SO_URL, clear_after_resp
 
-from db_models import SiteComment, User
+from db_models import SiteComment, User, JSONObjectData
 from api import *
 from oauth import *
 
@@ -70,7 +70,13 @@ def features():
 def roc():
     if g.user is None:
         return redirect(url_for('index'))  
-    return render_template('index.html', active_tab="roc", model=CURRENT_MODEL)
+    page = max(int(request.args.get("page", 1)), 1)
+    paginator = JSONObjectData.paginate_type(JSONObjectData.LOGREG_TYPE_ID, page)
+    return render_template('index.html', 
+        paginator=paginator, 
+        base_url=url_for("roc"), 
+        active_tab="roc", 
+        page=page)
 
 @application.route("/verifying", endpoint="verifying")
 @application.route("/verifying/", endpoint="verifying")

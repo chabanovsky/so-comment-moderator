@@ -6,7 +6,9 @@ function generateContainer(index) {
     return '<p><div id="roc-chart' + index.toString() + '" style="height:500px; width: 100%;"></div></p>';
 }
 $(document).ready(function(){
-    loadHelper(ROC_SERVER_ENDPOINT, function(data){
+    var page = $("#roc-id").text()
+    var url = ROC_SERVER_ENDPOINT + "?page=" + page
+    loadHelper(url, function(data){
         toDraw = []
         
         for (var index = 0; index < data.items.length; index++) {

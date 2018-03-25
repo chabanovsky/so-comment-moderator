@@ -75,7 +75,8 @@ def api_roc():
     if CURRENT_MODEL != MODEL_LOGISITIC_REGRESSION:
         abort(404)
 
-    items = JSONObjectData.all_extra(JSONObjectData.LOGREG_TYPE_ID)
+    page = max(int(request.args.get("page", 1)), 1) - 1
+    items = JSONObjectData.all_extra(JSONObjectData.LOGREG_TYPE_ID, 2, page)
     objects = []
     for item in items:
         objects.append({

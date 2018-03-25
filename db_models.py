@@ -50,6 +50,12 @@ class CommentStaticData:
         return CommentStaticData.processed_rude_word_list
 
 
+def paginate_helper(query, page_num, per_page):
+    total = query.count()
+    items = query.offset((page_num-1)*per_page).limit(per_page).all()
+    p = Pagination(query, page_num, per_page, total, items)
+    return p
+
 class SiteComment(db.Model):
     __tablename__ = 'site_comment'
     
@@ -163,13 +169,6 @@ class SiteComment(db.Model):
         result = query.all()
         session.close()
         return result    
-
-    @staticmethod
-    def paginate_helper(query, page_num, per_page):
-        total = query.count()
-        items = query.offset((page_num-1)*per_page).limit(per_page).all()
-        p = Pagination(query, page_num, per_page, total, items)
-        return p
     
     @staticmethod
     def paginate_unverified(page_num, per_page=15):
@@ -180,7 +179,7 @@ class SiteComment(db.Model):
             filter(SiteComment.verified==None).\
             filter(SiteComment.skipped==None).\
             order_by(desc(SiteComment.creation_date))
-        p = SiteComment.paginate_helper(query, page_num, per_page)
+        p = paginate_helper(query, page_num, per_page)
         session.close()
         return p 
 
@@ -192,7 +191,7 @@ class SiteComment(db.Model):
             filter(SiteComment.verified!=None).\
             filter(SiteComment.skipped==None).\
             order_by(desc(SiteComment.verified))
-        p = SiteComment.paginate_helper(query, page_num, per_page)
+        p = paginate_helper(query, page_num, per_page)
         session.close()
         return p    
 
@@ -203,7 +202,7 @@ class SiteComment(db.Model):
             filter(SiteComment.analysed!=None).\
             filter(SiteComment.skipped!=None).\
             order_by(desc(SiteComment.creation_date))
-        p = SiteComment.paginate_helper(query, page_num, per_page)
+        p = paginate_helper(query, page_num, per_page)
         session.close()
         return p 
 
@@ -240,15 +239,26 @@ class JSONObjectData(db.Model):
         return result    
 
     @staticmethod
-    def all_extra(type_id, limit=None):
+    def all_extra(type_id, limit=None, offset=None):
         session = db_session()
         query = session.query(JSONObjectData.extra.label('extra'), JSONObjectData.added.label('added')).filter(JSONObjectData.type_id==type_id).order_by(desc(JSONObjectData.added))
         if limit is not None:
             query = query.limit(limit)
+        if offset is not None:
+            query = query.offset(offset)
         result = query.all()
         session.close()
         return result    
 
+    @staticmethod
+    def paginate_type(type_id, page_num, per_page=2):
+        session = db_session()
+        query = session.query(JSONObjectData.extra.label('extra'), JSONObjectData.added.label('added')).\
+            filter(JSONObjectData.type_id==type_id).\
+            order_by(desc(JSONObjectData.added))
+        p = paginate_helper(query, page_num, per_page)
+        session.close()
+        return p  
 
 class User(db.Model):
     __tablename__ = 'user'
