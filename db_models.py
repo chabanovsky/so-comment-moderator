@@ -100,13 +100,13 @@ class SiteComment(db.Model):
 
         self.verified   = params.get('verified', None)
         self.is_rude    = params.get('is_rude', False)
-        self.verified_user = params.get('verified_user', -1)
+        self.verified_user_id = params.get('verified_user_id', -1)
         
 
-        self.added      = datetime.datetime.now()
-        self.analysed   = None
-        self.looks_rude = False
-        self.skipped    = None
+        self.added      = params.get('added', datetime.datetime.now())
+        self.analysed   = params.get('analysed', None)
+        self.looks_rude = params.get('looks_rude', False)
+        self.skipped    = params.get('skipped', None)
 
     def __repr__(self):
         return '<%s %r>' % (SiteComment.__tablename__, str(self.id))
@@ -145,7 +145,18 @@ class SiteComment(db.Model):
         query = session.query(SiteComment).filter(SiteComment.skipped==None).filter(SiteComment.is_rude==False).filter(SiteComment.verified!=None).order_by(desc(SiteComment.creation_date))
         result = query.all()
         session.close()
-        return result    
+        return result  
+
+    @staticmethod
+    def skipped_comments():
+        session = db_session()
+        query = session.query(SiteComment).\
+            filter(SiteComment.analysed!=None).\
+            filter(SiteComment.skipped!=None).\
+            order_by(desc(SiteComment.creation_date))
+        result = query.all()
+        session.close()
+        return result  
 
     @staticmethod
     def comments_for_analysis(analysed_at=None, include_skipped=False):

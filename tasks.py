@@ -1,6 +1,9 @@
 # encoding:utf-8
 import datetime
 import json
+import shutil
+import os
+import csv
 
 from se_api import get_recent_comments, get_post_infos
 from db_models import SiteComment, DBModelAdder, JSONObjectData, CommentStaticData
@@ -210,6 +213,49 @@ def analyse_with_cosine():
     for item in rude_cluster:
         print("- ", item.body, "\r\n")
 
+def dump_verified_comments():
+    directory = "./dump"
+
+    if os.path.exists(directory):
+        shutil.rmtree(directory)
+    os.makedirs(directory)
+
+    def dump_to(filename, comments):
+        def date_or_none(field):
+            return  field.strftime("%Y-%m-%d %H:%M:%S") if field is not None else None
+
+        with open(filename, 'w', encoding="utf8") as csvfile:
+            writer = csv.writer(csvfile, lineterminator='\n', delimiter=',')
+            for comment in comments:
+                writer.writerow([
+                    comment.comment_id,
+                    comment.question_id,
+                    comment.answer_id,
+                    comment.post_author_id,
+                    comment.post_score,
+                    comment.title,
+                    comment.body,
+                    date_or_none(comment.creation_date),
+                    comment.author_id,
+                    comment.author_name,
+                    comment.diff_with_post,
+                    date_or_none(comment.verified),
+                    comment.is_rude,
+                    comment.verified_user_id,
+                    date_or_none(comment.added),
+                    date_or_none(comment.analysed),
+                    comment.looks_rude,
+                    date_or_none(comment.skipped)
+                ]) 
+
+    rude_comments = SiteComment.rude_comments()
+    dump_to(directory + "/rude_comments.csv", rude_comments)
+
+    normal_comments = SiteComment.normal_comments()
+    dump_to(directory + "/normal_comments.csv", normal_comments)
+
+    skipped_comments = SiteComment.skipped_comments()
+    dump_to(directory + "/skipped_comments.csv", skipped_comments)
 
 def play():
     rude_comments = SiteComment.rude_comments() 

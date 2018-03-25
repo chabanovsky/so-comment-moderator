@@ -156,7 +156,7 @@ def actions_skipp(comment_id):
 
     comment.skipped = datetime.datetime.now()
     comment.verified = None
-    comment.verified_user = -1
+    comment.verified_user_id = -1
 
     adder.add(comment)
     adder.done()
