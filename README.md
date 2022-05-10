@@ -2,7 +2,7 @@
 
 This is a auto moderator that helps us to track rude comments on Stack Overflow in Russian
 
-# Take A Look At It Live
+# Take A Look At It
 
 The app is live with the besic model ever: https://chat.stackexchange.com/rooms/73258/. Admin app is depoyed on http://benice.rudevs.ru/
 
